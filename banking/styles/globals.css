@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f7fb;
-  --foreground: #172033;
-  --muted: #667085;
-  --line: #dde5f0;
+  --background: #f6f7f9;
+  --foreground: #151a23;
+  --muted: #697383;
+  --line: #e4e8ee;
   --panel: #ffffff;
-  --primary: #0f766e;
-  --primary-dark: #0b5f59;
-  --accent: #2563eb;
-  --danger: #dc2626;
-  --success: #12805c;
+  --primary: #111827;
+  --primary-dark: #000000;
+  --accent: #3b82f6;
+  --danger: #e25555;
+  --success: #168a63;
+  --soft: #f0f3f7;
+  --shadow: 0 18px 45px rgba(21, 26, 35, 0.07);
 }
 
 @theme inline {
@@ -25,7 +27,9 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 32rem),
+    linear-gradient(180deg, #fbfcfd 0%, var(--background) 44%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
@@ -47,12 +51,14 @@ button {
 }
 
 .login-shell {
-  align-items: stretch;
+  align-items: center;
   display: grid;
-  gap: 28px;
-  grid-template-columns: minmax(320px, 460px) minmax(320px, 1fr);
+  gap: 24px;
+  grid-template-columns: minmax(0, 440px);
+  justify-content: center;
   min-height: 100vh;
-  padding: 32px;
+  padding: 24px;
+  place-items: center;
 }
 
 .login-panel,
@@ -62,15 +68,16 @@ button {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 18px 60px rgba(23, 32, 51, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .login-panel {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
   justify-content: center;
-  padding: 42px;
+  padding: clamp(28px, 5vw, 52px);
+  width: 100%;
 }
 
 .brand-mark,
@@ -84,7 +91,7 @@ button {
 
 .brand-mark,
 .sidebar-brand span {
-  background: var(--primary);
+  background: #151a23;
   border-radius: 8px;
   color: #ffffff;
   font-weight: 800;
@@ -93,7 +100,7 @@ button {
 }
 
 .eyebrow {
-  color: var(--primary);
+  color: #4c5a6a;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -109,9 +116,13 @@ p {
 
 .login-panel h1,
 .page-header h1 {
-  font-size: clamp(2rem, 4vw, 3.25rem);
-  line-height: 1;
-  margin-bottom: 14px;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  line-height: 1.02;
+  margin-bottom: 12px;
+}
+
+.page-header h1 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
 }
 
 .muted,
@@ -134,15 +145,15 @@ label {
 }
 
 label span {
-  color: #344054;
+  color: #343d4b;
   font-size: 0.92rem;
   font-weight: 700;
 }
 
 input,
 select {
-  background: #ffffff;
-  border: 1px solid #cfd8e6;
+  background: #fbfcfd;
+  border: 1px solid #d9dfe8;
   border-radius: 8px;
   color: var(--foreground);
   min-height: 48px;
@@ -152,8 +163,9 @@ select {
 
 input:focus,
 select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  background: #ffffff;
+  border-color: #151a23;
+  box-shadow: 0 0 0 4px rgba(21, 26, 35, 0.08);
 }
 
 .form-row,
@@ -168,7 +180,7 @@ select:focus {
 
 .form-row a,
 .panel-heading a {
-  color: var(--primary);
+  color: #151a23;
   font-weight: 800;
 }
 
@@ -184,7 +196,7 @@ select:focus {
 
 .primary-action {
   align-items: center;
-  background: var(--primary);
+  background: #151a23;
   border: 0;
   border-radius: 8px;
   color: #ffffff;
@@ -193,20 +205,88 @@ select:focus {
   justify-content: center;
   min-height: 50px;
   padding: 0 18px;
+  transition:
+    background 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .primary-action:hover {
   background: var(--primary-dark);
+  box-shadow: 0 12px 24px rgba(21, 26, 35, 0.16);
+  transform: translateY(-1px);
+}
+
+.forgot-link {
+  color: #4c5a6a;
+  font-weight: 800;
+  justify-self: center;
+}
+
+.forgot-link:hover {
+  color: #151a23;
+}
+
+.auth-links {
+  align-items: center;
+  color: #4c5a6a;
+  display: grid;
+  gap: 10px;
+  justify-content: center;
+  text-align: center;
+}
+
+.auth-links a {
+  font-weight: 800;
+}
+
+.auth-links a:first-child {
+  color: #151a23;
+}
+
+.auth-links a + a {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.auth-links a:hover {
+  color: #151a23;
+}
+
+.auth-menu {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 4px;
+}
+
+.auth-menu a {
+  border-radius: 6px;
+  color: #5c6675;
+  font-size: 0.9rem;
+  font-weight: 800;
+  min-height: 38px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.auth-menu a.active {
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(21, 26, 35, 0.08);
+  color: #151a23;
 }
 
 .login-visual {
   align-items: center;
   background:
-    linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(37, 99, 235, 0.82)),
+    linear-gradient(135deg, rgba(21, 26, 35, 0.94), rgba(64, 84, 110, 0.86)),
     url("/globe.svg");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 68%, auto;
+  background-size: 62%, auto;
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -217,13 +297,16 @@ select:focus {
 
 .card-preview,
 .account-card {
-  background: linear-gradient(135deg, #102a43, #0f766e 58%, #2563eb);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 34%),
+    linear-gradient(135deg, #171b22 0%, #2d3a4c 58%, #6c7a89 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: #ffffff;
   max-width: 440px;
   min-height: 260px;
   padding: 28px;
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.22);
   width: 100%;
 }
 
@@ -242,7 +325,7 @@ select:focus {
 }
 
 .chip {
-  background: #f9d77e;
+  background: linear-gradient(135deg, #f5d47b, #d6a947);
   border-radius: 6px;
   height: 34px;
   margin-bottom: 24px;
@@ -251,8 +334,8 @@ select:focus {
 
 .security-note {
   align-items: center;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   display: flex;
   gap: 14px;
@@ -269,17 +352,20 @@ select:focus {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 272px minmax(0, 1fr);
   min-height: 100vh;
 }
 
 .sidebar {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.84);
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   gap: 28px;
   padding: 28px 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
 .sidebar-brand {
@@ -297,16 +383,24 @@ select:focus {
 .sidebar nav a,
 .logout-link {
   border-radius: 8px;
-  color: #344054;
+  color: #495466;
   font-weight: 700;
   padding: 12px 14px;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .sidebar nav a:hover,
 .sidebar nav a.active,
 .logout-link:hover {
-  background: #eef7f5;
-  color: var(--primary);
+  background: var(--soft);
+  color: #151a23;
+}
+
+.sidebar nav a.active {
+  box-shadow: inset 3px 0 0 #151a23;
 }
 
 .logout-link {
@@ -315,7 +409,7 @@ select:focus {
 
 .content-shell {
   min-width: 0;
-  padding: 28px;
+  padding: clamp(22px, 3vw, 36px);
 }
 
 .topbar {
@@ -328,7 +422,7 @@ select:focus {
 
 .profile-pill {
   align-items: center;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.86);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: flex;
@@ -338,9 +432,9 @@ select:focus {
 
 .profile-pill span,
 .transaction-item > span {
-  background: #e7f5f2;
+  background: var(--soft);
   border-radius: 8px;
-  color: var(--primary);
+  color: #151a23;
   flex: 0 0 auto;
   font-weight: 800;
   height: 42px;
@@ -355,7 +449,7 @@ select:focus {
 
 .page-stack {
   display: grid;
-  gap: 24px;
+  gap: 22px;
 }
 
 .page-header {
@@ -383,11 +477,24 @@ select:focus {
   font-weight: 800;
   min-height: 76px;
   padding: 20px;
+  position: relative;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.quick-actions a::after {
+  color: #8a94a3;
+  content: ">";
+  margin-left: auto;
 }
 
 .quick-actions a:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: #c5ccd8;
+  box-shadow: var(--shadow);
+  color: #151a23;
+  transform: translateY(-1px);
 }
 
 .account-card {
@@ -417,6 +524,7 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 20px;
+  box-shadow: 0 12px 30px rgba(21, 26, 35, 0.04);
 }
 
 .stat-card span,
@@ -432,15 +540,15 @@ select:focus {
 }
 
 .stat-card.blue {
-  border-top: 4px solid var(--accent);
+  border-left: 4px solid var(--accent);
 }
 
 .stat-card.green {
-  border-top: 4px solid var(--success);
+  border-left: 4px solid var(--success);
 }
 
 .stat-card.red {
-  border-top: 4px solid var(--danger);
+  border-left: 4px solid var(--danger);
 }
 
 .panel,
@@ -465,12 +573,21 @@ select:focus {
 
 .transaction-item {
   align-items: center;
-  border: 1px solid var(--line);
+  background: #fbfcfd;
+  border: 1px solid transparent;
   border-radius: 8px;
   display: grid;
   gap: 14px;
   grid-template-columns: 42px 1fr auto;
   padding: 14px;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.transaction-item:hover {
+  background: #ffffff;
+  border-color: var(--line);
 }
 
 .transaction-item b {
@@ -526,18 +643,24 @@ select:focus {
   .sidebar {
     border-bottom: 1px solid var(--line);
     border-right: 0;
+    gap: 18px;
+    height: auto;
     position: static;
   }
 
   .sidebar nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .logout-link {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 640px) {
   .login-shell,
   .content-shell {
-    padding: 18px;
+    padding: 16px;
   }
 
   .login-panel,
@@ -545,6 +668,42 @@ select:focus {
   .panel,
   .form-panel {
     padding: 20px;
+  }
+
+  .login-panel {
+    gap: 20px;
+  }
+
+  .login-panel h1 {
+    font-size: 2rem;
+  }
+
+  .auth-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    padding: 18px 16px;
+  }
+
+  .sidebar-brand {
+    justify-content: center;
+  }
+
+  .sidebar nav {
+    gap: 8px;
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar nav a,
+  .logout-link {
+    min-height: 44px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .sidebar nav a.active {
+    box-shadow: inset 0 -3px 0 #151a23;
   }
 
   .topbar,

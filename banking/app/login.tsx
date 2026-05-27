@@ -17,42 +17,22 @@ export default function LoginPage() {
 
         <form className="form-stack">
           <label>
-            <span>Email atau nomor rekening</span>
-            <input type="text" placeholder="contoh@email.com" />
+            <span>Username</span>
+            <input type="text" placeholder="Masukkan username" />
           </label>
           <label>
             <span>Password</span>
             <input type="password" placeholder="Masukkan password" />
           </label>
-          <div className="form-row">
-            <label className="check-row">
-              <input type="checkbox" />
-              <span>Ingat saya</span>
-            </label>
-            <a href="#">Lupa password?</a>
-          </div>
           <Link className="primary-action" href="/dashboard">
             Masuk
           </Link>
+          <div className="auth-links">
+            <Link href="/sign-in">Sign in</Link>
+            <Link href="/forgot-password">Lupa sandi?</Link>
+          </div>
         </form>
       </section>
-
-      <aside className="login-visual">
-        <div className="card-preview">
-          <div className="chip" />
-          <p>NovaBank Platinum</p>
-          <strong>5378 2210 9034 1188</strong>
-          <span>Saldo tersedia</span>
-          <h2>Rp 24.850.000</h2>
-        </div>
-        <div className="security-note">
-          <span aria-hidden="true">#</span>
-          <div>
-            <strong>UI demo</strong>
-            <p>Tampilan ini belum terhubung ke backend atau autentikasi asli.</p>
-          </div>
-        </div>
-      </aside>
     </main>
   );
 }
