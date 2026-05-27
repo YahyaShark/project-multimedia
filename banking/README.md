@@ -1,36 +1,194 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NovaBank Digital
 
-## Getting Started
+NovaBank Digital adalah aplikasi web banking sederhana berbasis Next.js. Project ini dibuat sebagai prototype UI modern minimalis untuk alur login, pembuatan akun, lupa sandi, dashboard rekening, cek saldo, transfer, dan aktivitas transaksi.
 
-First, run the development server:
+Saat ini project masih berupa frontend/demo UI. Data transaksi masih menggunakan sample data lokal dan belum terhubung ke database atau sistem autentikasi asli.
+
+## Fitur
+
+- Login dengan username dan password
+- Sign in untuk membuat akun baru
+- Lupa sandi dengan form ganti sandi berdasarkan username
+- Dashboard rekening dengan informasi kartu dan ringkasan transaksi
+- Cek saldo dan detail rekening
+- Form transfer dana
+- Daftar aktivitas transaksi
+- Tampilan modern minimalis dan responsif untuk desktop maupun HP
+
+## Teknologi
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- ESLint
+
+## Struktur Folder
+
+```text
+banking/
++-- app/
+|   +-- activity.tsx
+|   +-- balance.tsx
+|   +-- dashboard.tsx
+|   +-- forgot-password.tsx
+|   +-- index.tsx
+|   +-- login.tsx
+|   +-- sign-in.tsx
+|   +-- transfer.tsx
++-- components/
+|   +-- account-card.tsx
+|   +-- banking-layout.tsx
+|   +-- page-header.tsx
+|   +-- stat-card.tsx
++-- lib/
+|   +-- sample-data.ts
++-- pages/
+|   +-- _app.tsx
+|   +-- activity.tsx
+|   +-- balance.tsx
+|   +-- dashboard.tsx
+|   +-- forgot-password.tsx
+|   +-- index.tsx
+|   +-- login.tsx
+|   +-- sign-in.tsx
+|   +-- transfer.tsx
++-- public/
++-- styles/
+|   +-- globals.css
++-- env.example
++-- eslint.config.mjs
++-- next.config.ts
++-- package.json
++-- package-lock.json
++-- tsconfig.json
+```
+
+## Penjelasan Folder
+
+`app/` berisi komponen halaman utama yang dirender oleh route di folder `pages/`.
+
+`pages/` berisi route Next.js. Sebagian besar file di folder ini hanya melakukan export dari file di folder `app/`.
+
+`components/` berisi komponen UI yang dipakai berulang, seperti layout dashboard, kartu rekening, header halaman, dan kartu statistik.
+
+`lib/` berisi data/helper lokal. Untuk saat ini file `sample-data.ts` menyimpan data transaksi demo.
+
+`styles/` berisi styling global aplikasi, termasuk layout responsif, desain login, sidebar, kartu, form, dan dashboard.
+
+`public/` berisi asset statis bawaan Next.js.
+
+`env.example` adalah contoh konfigurasi environment. Rename file ini menjadi `.env` saat konfigurasi asli ingin digunakan.
+
+## Persiapan Environment
+
+Salin atau rename file contoh environment:
+
+```bash
+env.example -> .env
+```
+
+Isi default yang tersedia:
+
+```env
+NEXT_PUBLIC_APP_NAME=NovaBank Digital
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+AUTH_SECRET=change-this-secret
+AUTH_SESSION_MAX_AGE=86400
+DATABASE_URL=postgresql://username:password@localhost:5432/novabank
+```
+
+Catatan:
+
+- Jangan commit file `.env` yang berisi secret asli.
+- Untuk demo UI saat ini, project tetap bisa berjalan tanpa database.
+- Jika nanti memakai Supabase atau Neon, nilai `DATABASE_URL` dan konfigurasi auth bisa disesuaikan.
+
+## Cara Menjalankan Project
+
+Pastikan Node.js dan npm sudah terinstall.
+
+Install dependency:
+
+```bash
+npm install
+```
+
+Jalankan development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka aplikasi di browser:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Route utama:
 
-## Learn More
+```text
+/login
+/sign-in
+/forgot-password
+/dashboard
+/balance
+/transfer
+/activity
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Script yang Tersedia
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Menjalankan project dalam mode development.
 
-## Deploy on Vercel
+```bash
+npm run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Membuat production build dan menjalankan type-check.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run start
+```
+
+Menjalankan hasil production build.
+
+```bash
+npm run lint
+```
+
+Menjalankan ESLint.
+
+Jika `npm run lint` bermasalah di PowerShell karena execution policy, gunakan:
+
+```bash
+npm.cmd run lint
+```
+
+## Alur Penggunaan
+
+1. Buka `/login`.
+2. Masukkan username dan password demo.
+3. Klik `Masuk` untuk menuju dashboard.
+4. Gunakan link `Sign in` untuk membuka form pembuatan akun.
+5. Gunakan link `Lupa sandi?` untuk membuka form ganti sandi.
+6. Setelah masuk dashboard, informasi kartu rekening tampil di halaman dashboard.
+
+## Rencana Pengembangan
+
+- Integrasi database Supabase atau Neon
+- Autentikasi asli untuk login, register, dan lupa sandi
+- API route untuk user, rekening, transaksi, dan transfer
+- Validasi form
+- Role user dan admin jika dibutuhkan
+- Penyimpanan transaksi secara dinamis
+
+## Status Project
+
+Project ini siap dijalankan sebagai frontend demo. Untuk kebutuhan production, perlu ditambahkan backend, database, autentikasi, validasi, dan handling keamanan.
