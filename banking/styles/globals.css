@@ -1,18 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f7f9;
-  --foreground: #151a23;
-  --muted: #697383;
-  --line: #e4e8ee;
+  --background: #f4f7fb;
+  --foreground: #17202f;
+  --muted: #647084;
+  --line: #dfe6ef;
   --panel: #ffffff;
-  --primary: #111827;
-  --primary-dark: #000000;
-  --accent: #3b82f6;
-  --danger: #e25555;
-  --success: #168a63;
-  --soft: #f0f3f7;
-  --shadow: 0 18px 45px rgba(21, 26, 35, 0.07);
+  --primary: #0f2a43;
+  --primary-dark: #081a2c;
+  --accent: #1f7a8c;
+  --gold: #d6aa45;
+  --danger: #c84d58;
+  --success: #15805f;
+  --soft: #eef4f8;
+  --soft-strong: #eaf3f6;
+  --field: #fbfdff;
+  --field-border: #d8e1eb;
+  --label: #26364a;
+  --nav-text: #4b5a6f;
+  --body-start: #fbfdff;
+  --sidebar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 250, 252, 0.9));
+  --transaction-bg: #fbfdff;
+  --text-on-primary: #ffffff;
+  --shadow: 0 18px 44px rgba(15, 42, 67, 0.08);
+  --shadow-soft: 0 10px 24px rgba(15, 42, 67, 0.06);
+}
+
+html[data-theme="dark"] {
+  --background: #09111c;
+  --foreground: #eef4f8;
+  --muted: #9aa8ba;
+  --line: #1d3347;
+  --panel: #0f1b2a;
+  --primary: #d5edf2;
+  --primary-dark: #b8dfe8;
+  --accent: #5ec6d8;
+  --gold: #e0b553;
+  --danger: #ff7c86;
+  --success: #54d09f;
+  --soft: #132437;
+  --soft-strong: #173149;
+  --field: #0b1725;
+  --field-border: #254058;
+  --label: #d8e6ef;
+  --nav-text: #b4c2d1;
+  --body-start: #0c1827;
+  --sidebar-bg: linear-gradient(180deg, rgba(15, 27, 42, 0.96), rgba(9, 17, 28, 0.92));
+  --transaction-bg: #0b1725;
+  --text-on-primary: #07111d;
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  --shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.22);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -28,8 +66,8 @@
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 32rem),
-    linear-gradient(180deg, #fbfcfd 0%, var(--background) 44%);
+    linear-gradient(120deg, rgba(31, 122, 140, 0.1), transparent 28rem),
+    linear-gradient(180deg, var(--body-start) 0%, var(--background) 48%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
@@ -48,6 +86,49 @@ select {
 
 button {
   cursor: pointer;
+}
+
+.theme-toggle {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+  color: var(--foreground);
+  display: inline-flex;
+  font-size: 0.84rem;
+  font-weight: 800;
+  gap: 8px;
+  min-height: 42px;
+  padding: 7px 12px 7px 8px;
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: 20;
+}
+
+.theme-toggle-track {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: inline-flex;
+  height: 24px;
+  padding: 3px;
+  width: 44px;
+}
+
+.theme-toggle-thumb {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 999px;
+  display: block;
+  height: 16px;
+  transform: translateX(0);
+  transition: transform 180ms ease;
+  width: 16px;
+}
+
+html[data-theme="dark"] .theme-toggle-thumb {
+  transform: translateX(18px);
 }
 
 .login-shell {
@@ -72,6 +153,7 @@ button {
 }
 
 .login-panel {
+  border-top: 4px solid var(--accent);
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -91,16 +173,16 @@ button {
 
 .brand-mark,
 .sidebar-brand span {
-  background: #151a23;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--text-on-primary);
   font-weight: 800;
   height: 44px;
   width: 44px;
 }
 
 .eyebrow {
-  color: #4c5a6a;
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -117,7 +199,7 @@ p {
 .login-panel h1,
 .page-header h1 {
   font-size: clamp(2rem, 4vw, 3.1rem);
-  line-height: 1.02;
+  line-height: 1.04;
   margin-bottom: 12px;
 }
 
@@ -145,15 +227,15 @@ label {
 }
 
 label span {
-  color: #343d4b;
+  color: var(--label);
   font-size: 0.92rem;
   font-weight: 700;
 }
 
 input,
 select {
-  background: #fbfcfd;
-  border: 1px solid #d9dfe8;
+  background: var(--field);
+  border: 1px solid var(--field-border);
   border-radius: 8px;
   color: var(--foreground);
   min-height: 48px;
@@ -163,9 +245,9 @@ select {
 
 input:focus,
 select:focus {
-  background: #ffffff;
-  border-color: #151a23;
-  box-shadow: 0 0 0 4px rgba(21, 26, 35, 0.08);
+  background: var(--panel);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(31, 122, 140, 0.12);
 }
 
 .form-row,
@@ -180,7 +262,7 @@ select:focus {
 
 .form-row a,
 .panel-heading a {
-  color: #151a23;
+  color: var(--primary);
   font-weight: 800;
 }
 
@@ -196,10 +278,10 @@ select:focus {
 
 .primary-action {
   align-items: center;
-  background: #151a23;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   border: 0;
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--text-on-primary);
   display: inline-flex;
   font-weight: 800;
   justify-content: center;
@@ -212,24 +294,24 @@ select:focus {
 }
 
 .primary-action:hover {
-  background: var(--primary-dark);
-  box-shadow: 0 12px 24px rgba(21, 26, 35, 0.16);
+  background: linear-gradient(135deg, var(--primary-dark), #176b7c);
+  box-shadow: 0 12px 24px rgba(15, 42, 67, 0.18);
   transform: translateY(-1px);
 }
 
 .forgot-link {
-  color: #4c5a6a;
+  color: var(--muted);
   font-weight: 800;
   justify-self: center;
 }
 
 .forgot-link:hover {
-  color: #151a23;
+  color: var(--primary);
 }
 
 .auth-links {
   align-items: center;
-  color: #4c5a6a;
+  color: var(--muted);
   display: grid;
   gap: 10px;
   justify-content: center;
@@ -241,7 +323,7 @@ select:focus {
 }
 
 .auth-links a:first-child {
-  color: #151a23;
+  color: var(--primary);
 }
 
 .auth-links a + a {
@@ -250,7 +332,7 @@ select:focus {
 }
 
 .auth-links a:hover {
-  color: #151a23;
+  color: var(--primary);
 }
 
 .auth-menu {
@@ -265,7 +347,7 @@ select:focus {
 
 .auth-menu a {
   border-radius: 6px;
-  color: #5c6675;
+  color: var(--nav-text);
   font-size: 0.9rem;
   font-weight: 800;
   min-height: 38px;
@@ -274,15 +356,15 @@ select:focus {
 }
 
 .auth-menu a.active {
-  background: #ffffff;
-  box-shadow: 0 8px 20px rgba(21, 26, 35, 0.08);
-  color: #151a23;
+  background: var(--panel);
+  box-shadow: 0 8px 20px rgba(15, 42, 67, 0.08);
+  color: var(--primary);
 }
 
 .login-visual {
   align-items: center;
   background:
-    linear-gradient(135deg, rgba(21, 26, 35, 0.94), rgba(64, 84, 110, 0.86)),
+    linear-gradient(135deg, rgba(15, 42, 67, 0.95), rgba(31, 122, 140, 0.84)),
     url("/globe.svg");
   background-position: center;
   background-repeat: no-repeat;
@@ -298,8 +380,8 @@ select:focus {
 .card-preview,
 .account-card {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 34%),
-    linear-gradient(135deg, #171b22 0%, #2d3a4c 58%, #6c7a89 100%);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, #0b1f33 0%, #123a56 54%, #1f7a8c 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: #ffffff;
@@ -325,7 +407,7 @@ select:focus {
 }
 
 .chip {
-  background: linear-gradient(135deg, #f5d47b, #d6a947);
+  background: linear-gradient(135deg, #f5d47b, var(--gold));
   border-radius: 6px;
   height: 34px;
   margin-bottom: 24px;
@@ -352,12 +434,12 @@ select:focus {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 272px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 1fr);
   min-height: 100vh;
 }
 
 .sidebar {
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--sidebar-bg), var(--panel);
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
@@ -375,6 +457,10 @@ select:focus {
   font-size: 1.1rem;
 }
 
+.sidebar-brand strong {
+  color: var(--primary);
+}
+
 .sidebar nav {
   display: grid;
   gap: 8px;
@@ -383,7 +469,7 @@ select:focus {
 .sidebar nav a,
 .logout-link {
   border-radius: 8px;
-  color: #495466;
+  color: var(--nav-text);
   font-weight: 700;
   padding: 12px 14px;
   transition:
@@ -395,12 +481,12 @@ select:focus {
 .sidebar nav a:hover,
 .sidebar nav a.active,
 .logout-link:hover {
-  background: var(--soft);
-  color: #151a23;
+  background: var(--soft-strong);
+  color: var(--primary);
 }
 
 .sidebar nav a.active {
-  box-shadow: inset 3px 0 0 #151a23;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .logout-link {
@@ -422,7 +508,7 @@ select:focus {
 
 .profile-pill {
   align-items: center;
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: flex;
@@ -432,9 +518,9 @@ select:focus {
 
 .profile-pill span,
 .transaction-item > span {
-  background: var(--soft);
+  background: var(--soft-strong);
   border-radius: 8px;
-  color: #151a23;
+  color: var(--primary);
   flex: 0 0 auto;
   font-weight: 800;
   height: 42px;
@@ -456,6 +542,11 @@ select:focus {
   max-width: 760px;
 }
 
+.page-header span {
+  display: block;
+  line-height: 1.6;
+}
+
 .dashboard-grid,
 .balance-layout {
   display: grid;
@@ -470,7 +561,7 @@ select:focus {
 
 .quick-actions a {
   align-items: center;
-  background: #ffffff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: flex;
@@ -485,15 +576,22 @@ select:focus {
 }
 
 .quick-actions a::after {
-  color: #8a94a3;
+  background: var(--soft-strong);
+  border-radius: 999px;
+  color: var(--accent);
   content: ">";
+  display: inline-flex;
+  height: 28px;
+  justify-content: center;
+  align-items: center;
   margin-left: auto;
+  width: 28px;
 }
 
 .quick-actions a:hover {
-  border-color: #c5ccd8;
+  border-color: rgba(31, 122, 140, 0.28);
   box-shadow: var(--shadow);
-  color: #151a23;
+  color: var(--primary);
   transform: translateY(-1px);
 }
 
@@ -520,11 +618,11 @@ select:focus {
 }
 
 .stat-card {
-  background: #ffffff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 12px 30px rgba(21, 26, 35, 0.04);
+  box-shadow: var(--shadow-soft);
 }
 
 .stat-card span,
@@ -556,6 +654,13 @@ select:focus {
   padding: 24px;
 }
 
+.panel,
+.form-panel,
+.quick-actions a,
+.stat-card {
+  backdrop-filter: blur(12px);
+}
+
 .panel-heading {
   gap: 16px;
   margin-bottom: 18px;
@@ -573,7 +678,7 @@ select:focus {
 
 .transaction-item {
   align-items: center;
-  background: #fbfcfd;
+  background: var(--transaction-bg);
   border: 1px solid transparent;
   border-radius: 8px;
   display: grid;
@@ -586,7 +691,7 @@ select:focus {
 }
 
 .transaction-item:hover {
-  background: #ffffff;
+  background: var(--panel);
   border-color: var(--line);
 }
 
@@ -703,7 +808,7 @@ select:focus {
   }
 
   .sidebar nav a.active {
-    box-shadow: inset 0 -3px 0 #151a23;
+    box-shadow: inset 0 -3px 0 var(--accent);
   }
 
   .topbar,

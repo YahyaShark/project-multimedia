@@ -1,1 +1,1 @@
-export { default } from "@/app/sign-in";
+export { default } from "@/views/sign-in";

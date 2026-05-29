@@ -1,5 +1,6 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "../styles/globals.css";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -12,6 +13,7 @@ export default function App({ Component, pageProps }: AppProps) {
           content="UI banking untuk login, transfer, cek saldo, dan aktivitas."
         />
       </Head>
+      <ThemeToggle />
       <Component {...pageProps} />
     </>
   );

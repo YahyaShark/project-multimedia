@@ -1,1 +1,1 @@
-export { default } from "@/app/activity";
+export { default } from "@/views/activity";
