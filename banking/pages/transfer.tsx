@@ -1,1 +1,1 @@
-export { default } from "@/views/transfer";
+export { default } from "@/app/transfer";

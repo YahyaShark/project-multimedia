@@ -1,40 +1,9 @@
-import { useEffect, useState } from "react";
+"use client";
 
-type ThemeMode = "light" | "dark";
-
-const storageKey = "novabank-theme";
-
-function getPreferredTheme(): ThemeMode {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-
-  const savedTheme = window.localStorage.getItem(storageKey);
-
-  if (savedTheme === "light" || savedTheme === "dark") {
-    return savedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
+import { useTheme } from "@/lib/use-theme";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<ThemeMode>("light");
-
-  useEffect(() => {
-    const preferredTheme = getPreferredTheme();
-
-    setTheme(preferredTheme);
-    document.documentElement.dataset.theme = preferredTheme;
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-
-    setTheme(nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
-    window.localStorage.setItem(storageKey, nextTheme);
-  };
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button

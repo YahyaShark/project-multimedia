@@ -13,6 +13,7 @@ Saat ini project masih berupa frontend/demo UI. Data transaksi masih menggunakan
 - Cek saldo dan detail rekening
 - Form transfer dana
 - Daftar aktivitas transaksi
+- Dark mode dengan toggle tema
 - Tampilan modern minimalis dan responsif untuk desktop maupun HP
 
 ## Teknologi
@@ -41,8 +42,10 @@ banking/
 |   +-- banking-layout.tsx
 |   +-- page-header.tsx
 |   +-- stat-card.tsx
+|   +-- theme-toggle.tsx
 +-- lib/
 |   +-- sample-data.ts
+|   +-- use-theme.ts
 +-- pages/
 |   +-- _app.tsx
 |   +-- activity.tsx
@@ -66,13 +69,13 @@ banking/
 
 ## Penjelasan Folder
 
-`app/` berisi komponen halaman utama yang dirender oleh route di folder `pages/`.
+`app/` berisi file halaman utama secara datar, seperti `login.tsx`, `dashboard.tsx`, dan `forgot-password.tsx`.
 
-`pages/` berisi route Next.js. Sebagian besar file di folder ini hanya melakukan export dari file di folder `app/`.
+`pages/` berisi route Next.js. File di folder ini hanya meneruskan export dari file halaman di folder `app/`.
 
-`components/` berisi komponen UI yang dipakai berulang, seperti layout dashboard, kartu rekening, header halaman, dan kartu statistik.
+`components/` berisi komponen UI yang dipakai berulang, seperti layout dashboard, kartu rekening, header halaman, kartu statistik, dan tombol theme toggle.
 
-`lib/` berisi data/helper lokal. Untuk saat ini file `sample-data.ts` menyimpan data transaksi demo.
+`lib/` berisi data/helper lokal. Untuk saat ini file `sample-data.ts` menyimpan data transaksi demo dan `use-theme.ts` menyimpan fitur dark mode.
 
 `styles/` berisi styling global aplikasi, termasuk layout responsif, desain login, sidebar, kartu, form, dan dashboard.
 

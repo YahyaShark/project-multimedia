@@ -1,1 +1,1 @@
-export { default } from "@/views/index";
+export { default } from "@/app/index";
