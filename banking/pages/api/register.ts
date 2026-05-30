@@ -8,9 +8,12 @@ type RegisterBody = {
 };
 
 type AuthUserResponse = {
+  code?: string;
+  details?: string;
   id?: string;
   error?: string;
   error_description?: string;
+  message?: string;
   msg?: string;
 };
 
@@ -39,6 +42,30 @@ function getServerConfig() {
   };
 }
 
+function getSupabaseError(data: AuthUserResponse, fallback: string) {
+  if (data.code === "PGRST205") {
+    return "Tabel public.profiles belum dibuat di Supabase. Jalankan file supabase-profiles.sql dulu.";
+  }
+
+  return data.error_description || data.msg || data.message || data.error || fallback;
+}
+
+async function checkProfilesTable() {
+  const { serviceRoleKey: key, supabaseUrl: url } = getServerConfig();
+  const response = await fetch(`${url}/rest/v1/profiles?select=id&limit=1`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+    },
+  });
+  const text = await response.text();
+  const data = text ? (JSON.parse(text) as AuthUserResponse) : {};
+
+  if (!response.ok) {
+    throw new Error(getSupabaseError(data, "Tabel profil belum bisa diakses."));
+  }
+}
+
 async function createAuthUser(body: Record<string, unknown>) {
   const { serviceRoleKey: key, supabaseUrl: url } = getServerConfig();
   const response = await fetch(`${url}/auth/v1/admin/users`, {
@@ -53,10 +80,22 @@ async function createAuthUser(body: Record<string, unknown>) {
   const data = (await response.json()) as AuthUserResponse;
 
   if (!response.ok) {
-    throw new Error(data.error_description || data.msg || data.error || "Request Supabase gagal.");
+    throw new Error(getSupabaseError(data, "Request Supabase gagal."));
   }
 
   return data;
+}
+
+async function deleteAuthUser(userId: string) {
+  const { serviceRoleKey: key, supabaseUrl: url } = getServerConfig();
+
+  await fetch(`${url}/auth/v1/admin/users/${userId}`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+    },
+    method: "DELETE",
+  });
 }
 
 async function insertProfile(body: Record<string, unknown>) {
@@ -75,7 +114,7 @@ async function insertProfile(body: Record<string, unknown>) {
   const data = text ? (JSON.parse(text) as AuthUserResponse) : {};
 
   if (!response.ok) {
-    throw new Error(data.error_description || data.msg || data.error || "Gagal menyimpan profil.");
+    throw new Error(getSupabaseError(data, "Gagal menyimpan profil."));
   }
 }
 
@@ -95,6 +134,8 @@ export default async function handler(
   }
 
   try {
+    await checkProfilesTable();
+
     const accountNumber = generateAccountNumber();
     const cardNumber = generateCardNumber();
     const user = await createAuthUser({
@@ -110,13 +151,18 @@ export default async function handler(
       throw new Error("User Supabase berhasil dibuat, tapi ID user tidak ditemukan.");
     }
 
-    await insertProfile({
-      account_number: accountNumber,
-      card_number: cardNumber,
-      email,
-      full_name: fullName,
-      id: user.id,
-    });
+    try {
+      await insertProfile({
+        account_number: accountNumber,
+        card_number: cardNumber,
+        email,
+        full_name: fullName,
+        id: user.id,
+      });
+    } catch (error) {
+      await deleteAuthUser(user.id);
+      throw error;
+    }
 
     return response.status(201).json({
       accountNumber,
