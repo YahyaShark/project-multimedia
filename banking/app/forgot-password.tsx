@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
           NB
         </div>
         <nav className="auth-menu" aria-label="Menu autentikasi">
-          <Link href="/sign-in">Sign in</Link>
+          <Link href="/register">Buat akun</Link>
           <Link className="active" href="/forgot-password">
             Lupa sandi
           </Link>

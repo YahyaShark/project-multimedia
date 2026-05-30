@@ -88,6 +88,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .theme-toggle {
   align-items: center;
   background: var(--panel);
@@ -307,6 +312,21 @@ select:focus {
 
 .forgot-link:hover {
   color: var(--primary);
+}
+
+.form-message {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--label);
+  font-size: 0.92rem;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.form-message.error {
+  border-color: rgba(200, 77, 88, 0.32);
+  color: var(--danger);
 }
 
 .auth-links {

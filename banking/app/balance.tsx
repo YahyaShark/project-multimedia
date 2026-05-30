@@ -1,9 +1,19 @@
+import { useState } from "react";
 import { AccountCard } from "@/components/account-card";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
+import { formatBankNumber } from "@/lib/banking-numbers";
 
 export default function BalancePage() {
+  const [accountNumber] = useState(() => {
+    if (typeof window === "undefined") {
+      return "537822109034";
+    }
+
+    return localStorage.getItem("novabank_account_number") || "537822109034";
+  });
+
   return (
     <BankingLayout>
       <main className="page-stack">
@@ -33,7 +43,7 @@ export default function BalancePage() {
             </div>
             <div>
               <span>Nomor rekening</span>
-              <strong>5378 2210 9034</strong>
+              <strong suppressHydrationWarning>{formatBankNumber(accountNumber)}</strong>
             </div>
             <div>
               <span>Jenis rekening</span>

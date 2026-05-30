@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
+import { formatBankNumber } from "@/lib/banking-numbers";
 
 export default function TransferPage() {
+  const [accountNumber] = useState(() => {
+    if (typeof window === "undefined") {
+      return "537822109034";
+    }
+
+    return localStorage.getItem("novabank_account_number") || "537822109034";
+  });
+
   return (
     <BankingLayout>
       <main className="page-stack">
@@ -16,7 +26,9 @@ export default function TransferPage() {
             <label>
               <span>Rekening sumber</span>
               <select defaultValue="primary">
-                <option value="primary">NovaBank Utama - 5378 2210 9034</option>
+                <option value="primary" suppressHydrationWarning>
+                  NovaBank Utama - {formatBankNumber(accountNumber)}
+                </option>
                 <option value="savings">Tabungan Pendidikan - 7781 4309 2201</option>
               </select>
             </label>
