@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 const navItems = [
@@ -11,6 +14,20 @@ const navItems = [
 
 export function BankingLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const [fullName, setFullName] = useState("Nasabah");
+  const [initials, setInitials] = useState("NB");
+
+  useEffect(() => {
+    const savedFullName = localStorage.getItem("novabank_full_name");
+    if (savedFullName) {
+      setFullName(savedFullName);
+      const names = savedFullName.split(" ");
+      const newInitials = names.map((n) => n.charAt(0)).join("").toUpperCase();
+      setInitials(newInitials || "NB");
+    }
+  }, []);
+
+  const firstName = fullName.split(" ")[0];
 
   return (
     <div className="app-shell">
@@ -39,12 +56,12 @@ export function BankingLayout({ children }: { children: ReactNode }) {
         <header className="topbar">
           <div>
             <p className="eyebrow">Personal Banking</p>
-            <strong>Selamat datang, Raka</strong>
+            <strong suppressHydrationWarning>Selamat datang, {firstName}</strong>
           </div>
           <div className="profile-pill">
-            <span>RA</span>
+            <span suppressHydrationWarning>{initials}</span>
             <div>
-              <strong>Raka Aditya</strong>
+              <strong suppressHydrationWarning>{fullName}</strong>
               <p>Nasabah Prioritas</p>
             </div>
           </div>

@@ -21,6 +21,7 @@ type ProfileResponse = {
   email?: string;
   error?: string;
   full_name?: string;
+  balance?: number;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -129,6 +130,10 @@ export async function loadUserProfile(accessToken: string) {
 
   if (data.full_name) {
     localStorage.setItem("novabank_full_name", data.full_name);
+  }
+
+  if (data.balance) {
+    localStorage.setItem("novabank_balance", String(data.balance));
   }
 
   return data;

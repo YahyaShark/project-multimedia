@@ -13,6 +13,7 @@ type Profile = {
   email?: string;
   full_name?: string;
   id?: string;
+  balance?: number;
 };
 
 type ErrorResponse = {
@@ -79,6 +80,22 @@ export default async function handler(
 
     if (!profileResponse.ok || !profiles[0]) {
       return response.status(404).json({ error: "Profil nasabah belum ditemukan." });
+    }
+
+    // Ambil balance dari tabel accounts
+    const accountResponse = await fetch(
+      `${url}/rest/v1/accounts?user_id=eq.${user.id}&select=balance&limit=1`,
+      {
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+        },
+      },
+    );
+
+    const accounts = (await accountResponse.json()) as Array<{ balance: number }>;
+    if (accountResponse.ok && accounts[0]) {
+      profiles[0].balance = accounts[0].balance;
     }
 
     return response.status(200).json(profiles[0]);

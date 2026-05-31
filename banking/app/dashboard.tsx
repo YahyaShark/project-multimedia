@@ -1,11 +1,41 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { AccountCard } from "@/components/account-card";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
-import { transactions } from "@/lib/sample-data";
+import { transactions as sampleTransactions } from "@/lib/sample-data";
+
+type Transaction = {
+  id: string;
+  initial: string;
+  title: string;
+  date: string;
+  category?: string;
+  amount: string;
+  description?: string;
+};
 
 export default function DashboardPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
+
+  useEffect(() => {
+    // Baca transaksi baru dari localStorage
+    if (typeof window !== "undefined") {
+      const savedTransactions = localStorage.getItem("novabank_transactions");
+      if (savedTransactions) {
+        try {
+          const parsed = JSON.parse(savedTransactions);
+          setTransactions([...parsed, ...sampleTransactions]);
+        } catch (error) {
+          setTransactions(sampleTransactions);
+        }
+      }
+    }
+  }, []);
+
   return (
     <BankingLayout>
       <main className="page-stack">
@@ -42,6 +72,7 @@ export default function DashboardPage() {
                 <div>
                   <strong>{item.title}</strong>
                   <p>{item.date}</p>
+                  {item.description && <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>{item.description}</p>}
                 </div>
                 <b className={item.amount.startsWith("+") ? "income" : "expense"}>
                   {item.amount}

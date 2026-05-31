@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatBankNumber, generateCardNumber } from "@/lib/banking-numbers";
+
+const INITIAL_BALANCE = 0;
 
 export function AccountCard() {
   const [cardNumber] = useState(() => {
@@ -20,6 +22,32 @@ export function AccountCard() {
     return newCardNumber;
   });
 
+  const [balance, setBalance] = useState(INITIAL_BALANCE);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Inisialisasi saldo jika belum ada
+    if (!localStorage.getItem("novabank_balance")) {
+      localStorage.setItem("novabank_balance", String(INITIAL_BALANCE));
+    } else {
+      const savedBalance = localStorage.getItem("novabank_balance");
+      setBalance(parseInt(savedBalance || String(INITIAL_BALANCE)));
+    }
+
+    // Listen untuk perubahan balance dari tab/window lain
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "novabank_balance" && e.newValue) {
+        setBalance(parseInt(e.newValue));
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const formattedBalance = new Intl.NumberFormat("id-ID").format(balance);
+
   return (
     <article className="account-card">
       <div className="account-card-top">
@@ -28,7 +56,7 @@ export function AccountCard() {
       </div>
       <div>
         <p>Saldo utama</p>
-        <h2>Rp 24.850.000</h2>
+        <h2 suppressHydrationWarning>Rp {formattedBalance}</h2>
       </div>
       <div className="account-card-bottom">
         <span suppressHydrationWarning>{formatBankNumber(cardNumber)}</span>

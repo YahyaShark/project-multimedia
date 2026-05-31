@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { AccountCard } from "@/components/account-card";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
@@ -14,6 +16,37 @@ export default function BalancePage() {
     return localStorage.getItem("novabank_account_number") || "537822109034";
   });
 
+  const [fullName, setFullName] = useState("Nasabah");
+  const [balance, setBalance] = useState(24850000);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Baca saldo dari localStorage
+    const savedBalance = localStorage.getItem("novabank_balance");
+    if (savedBalance) {
+      setBalance(parseInt(savedBalance));
+    }
+
+    const savedFullName = localStorage.getItem("novabank_full_name");
+    if (savedFullName) {
+      setFullName(savedFullName);
+    }
+
+    // Listen untuk perubahan balance
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "novabank_balance" && e.newValue) {
+        setBalance(parseInt(e.newValue));
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const formattedBalance = new Intl.NumberFormat("id-ID").format(balance);
+  const limitTransfer = new Intl.NumberFormat("id-ID").format(50000000);
+
   return (
     <BankingLayout>
       <main className="page-stack">
@@ -26,9 +59,9 @@ export default function BalancePage() {
         <section className="balance-layout">
           <AccountCard />
           <div className="stats-grid compact">
-            <StatCard label="Saldo tersedia" value="Rp 24.850.000" tone="blue" />
+            <StatCard label="Saldo tersedia" value={`Rp ${formattedBalance}`} tone="blue" />
             <StatCard label="Saldo ditahan" value="Rp 350.000" tone="red" />
-            <StatCard label="Limit transfer hari ini" value="Rp 50.000.000" tone="green" />
+            <StatCard label="Limit transfer hari ini" value={`Rp ${limitTransfer}`} tone="green" />
           </div>
         </section>
 
@@ -39,7 +72,7 @@ export default function BalancePage() {
           <div className="detail-grid">
             <div>
               <span>Nama rekening</span>
-              <strong>Raka Aditya</strong>
+              <strong suppressHydrationWarning>{fullName}</strong>
             </div>
             <div>
               <span>Nomor rekening</span>
