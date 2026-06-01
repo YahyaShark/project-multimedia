@@ -23,9 +23,11 @@ type SupabaseUser = {
   msg?: string;
 };
 
-type Account = {
+type Profile = {
   id?: string;
   balance?: number;
+  account_number?: string;
+  full_name?: string;
   error?: string;
 };
 
@@ -64,9 +66,9 @@ async function getUserId(token: string) {
   return data.id;
 }
 
-async function getUserAccount(userId: string) {
+async function getUserProfile(userId: string) {
   const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
-  const response = await fetch(`${url}/rest/v1/accounts?user_id=eq.${userId}&select=id,balance&limit=1`, {
+  const response = await fetch(`${url}/rest/v1/profiles?id=eq.${userId}&select=id,balance,account_number,full_name&limit=1`, {
     headers: {
       apikey: key,
       Authorization: `Bearer ${key}`,
@@ -74,20 +76,37 @@ async function getUserAccount(userId: string) {
   });
 
   if (!response.ok) {
-    throw new Error("Gagal mengambil akun pengguna.");
+    throw new Error("Gagal mengambil profil pengguna.");
   }
 
-  const accounts = (await response.json()) as Account[];
-  if (!accounts[0]) {
-    throw new Error("Akun pengguna tidak ditemukan.");
+  const profiles = (await response.json()) as Profile[];
+  if (!profiles[0]) {
+    throw new Error("Profil pengguna tidak ditemukan.");
   }
 
-  return accounts[0];
+  return profiles[0];
 }
 
-async function updateAccountBalance(accountId: string, newBalance: number) {
+async function getProfileByAccountNumber(accountNumber: string) {
   const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
-  const response = await fetch(`${url}/rest/v1/accounts?id=eq.${accountId}`, {
+  const response = await fetch(`${url}/rest/v1/profiles?account_number=eq.${accountNumber}&select=id,balance,account_number,full_name&limit=1`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mencari akun tujuan.");
+  }
+
+  const profiles = (await response.json()) as Profile[];
+  return profiles[0] || null;
+}
+
+async function updateProfileBalance(userId: string, newBalance: number) {
+  const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
+  const response = await fetch(`${url}/rest/v1/profiles?id=eq.${userId}`, {
     body: JSON.stringify({ balance: newBalance }),
     headers: {
       apikey: key,
@@ -104,19 +123,27 @@ async function updateAccountBalance(accountId: string, newBalance: number) {
 }
 
 async function insertTransaction(
-  senderAccountId: string,
+  userId: string,
+  type: string,
+  title: string,
   amount: number,
-  description: string,
-  status: string = "completed",
+  destinationBank?: string,
+  destinationAccount?: string,
+  destinationName?: string,
+  notes?: string,
 ) {
   const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
   const response = await fetch(`${url}/rest/v1/transactions`, {
     body: JSON.stringify({
+      user_id: userId,
+      type,
+      title,
       amount,
+      destination_bank: destinationBank,
+      destination_account: destinationAccount,
+      destination_name: destinationName,
+      notes,
       created_at: new Date().toISOString(),
-      description,
-      sender_account_id: senderAccountId,
-      status,
     }),
     headers: {
       apikey: key,
@@ -127,13 +154,11 @@ async function insertTransaction(
     method: "POST",
   });
 
-  const data = (await response.json()) as Account[];
-
-  if (!response.ok || !data[0]) {
+  if (!response.ok) {
     throw new Error("Gagal menyimpan transaksi.");
   }
 
-  return data[0];
+  return await response.json();
 }
 
 export default async function handler(
@@ -168,42 +193,85 @@ export default async function handler(
 
   try {
     const userId = await getUserId(token);
-    const account = await getUserAccount(userId);
+    const senderProfile = await getUserProfile(userId);
 
-    if (!account.id || account.balance === undefined) {
+    if (!senderProfile.id || senderProfile.balance === undefined) {
       return response.status(400).json({ error: "Akun atau saldo tidak ditemukan." });
     }
 
-    if (account.balance < nominal) {
+    if (senderProfile.balance < nominal) {
       return response.status(400).json({
         error: "Saldo tidak cukup untuk melakukan transfer.",
       });
     }
 
-    const newBalance = account.balance - nominal;
+    // Cek apakah tujuan adalah pengguna NovaBank (destinationAccount adalah account_number)
+    const recipientProfile = await getProfileByAccountNumber(destinationAccount);
 
-    // Update balance
-    await updateAccountBalance(account.id, newBalance);
+    let newSenderBalance = senderProfile.balance - nominal;
 
-    // Insert transaction
-    const description = `Transfer ke ${destinationBank} - ${destinationName} (${destinationAccount})${notes ? ` - ${notes}` : ""}`;
-    const transaction = await insertTransaction(
-      account.id,
-      -nominal,
-      description,
-      "completed",
-    );
+    if (recipientProfile && recipientProfile.id) {
+      // Transfer antar pengguna NovaBank
+      const newRecipientBalance = (recipientProfile.balance || 0) + nominal;
 
-    return response.status(201).json({
-      message: "Transfer berhasil diproses.",
-      newBalance,
-      success: true,
-      transactionId: transaction.id as string,
-    });
+      // Update balance kedua pengguna
+      await updateProfileBalance(senderProfile.id, newSenderBalance);
+      await updateProfileBalance(recipientProfile.id, newRecipientBalance);
+
+      // Insert transaksi untuk pengirim
+      await insertTransaction(
+        senderProfile.id,
+        "transfer",
+        `Transfer ke ${recipientProfile.full_name}`,
+        -nominal,
+        "NovaBank",
+        destinationAccount,
+        recipientProfile.full_name,
+        notes,
+      );
+
+      // Insert transaksi untuk penerima
+      await insertTransaction(
+        recipientProfile.id,
+        "transfer",
+        `Transfer dari ${senderProfile.full_name}`,
+        nominal,
+        "NovaBank",
+        senderProfile.account_number,
+        senderProfile.full_name,
+        notes,
+      );
+
+      return response.status(201).json({
+        message: "Transfer ke pengguna NovaBank berhasil diproses.",
+        newBalance: newSenderBalance,
+        success: true,
+      });
+    } else {
+      // Transfer ke bank eksternal (simulasi)
+      await updateProfileBalance(senderProfile.id, newSenderBalance);
+
+      // Insert transaksi untuk pengirim
+      await insertTransaction(
+        senderProfile.id,
+        "transfer",
+        `Transfer ke ${destinationBank}`,
+        -nominal,
+        destinationBank,
+        destinationAccount,
+        destinationName,
+        notes,
+      );
+
+      return response.status(201).json({
+        message: "Transfer ke bank eksternal berhasil diproses.",
+        newBalance: newSenderBalance,
+        success: true,
+      });
+    }
   } catch (error) {
-    console.error("Transfer error:", error);
-    return response.status(400).json({
-      error: error instanceof Error ? error.message : "Gagal memproses transfer.",
-    });
+    const errorMessage = error instanceof Error ? error.message : "Transfer gagal.";
+    console.error("[Transfer API Error]", errorMessage, error);
+    return response.status(400).json({ error: errorMessage });
   }
 }

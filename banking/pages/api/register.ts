@@ -118,26 +118,6 @@ async function insertProfile(body: Record<string, unknown>) {
   }
 }
 
-async function insertAccount(body: Record<string, unknown>) {
-  const { serviceRoleKey: key, supabaseUrl: url } = getServerConfig();
-  const response = await fetch(`${url}/rest/v1/accounts`, {
-    body: JSON.stringify(body),
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
-    method: "POST",
-  });
-  const text = await response.text();
-  const data = text ? (JSON.parse(text) as AuthUserResponse) : {};
-
-  if (!response.ok) {
-    throw new Error(getSupabaseError(data, "Gagal membuat akun."));
-  }
-}
-
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<SuccessResponse | ErrorResponse>,
@@ -174,18 +154,11 @@ export default async function handler(
     try {
       await insertProfile({
         account_number: accountNumber,
+        balance: 0,
         card_number: cardNumber,
         email,
         full_name: fullName,
         id: user.id,
-      });
-
-      // Buat akun dengan balance
-      await insertAccount({
-        account_number: accountNumber,
-        account_type: "Platinum",
-        balance: 0,
-        user_id: user.id,
       });
     } catch (error) {
       await deleteAuthUser(user.id);

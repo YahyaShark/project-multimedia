@@ -132,7 +132,7 @@ export async function loadUserProfile(accessToken: string) {
     localStorage.setItem("novabank_full_name", data.full_name);
   }
 
-  if (data.balance) {
+  if (data.balance !== undefined && data.balance !== null) {
     localStorage.setItem("novabank_balance", String(data.balance));
   }
 

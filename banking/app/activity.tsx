@@ -13,27 +13,96 @@ type Transaction = {
   category?: string;
   amount: string;
   description?: string;
+  sender_account_id?: string;
+  receiver_account_id?: string;
+  status?: string;
+  created_at?: string;
 };
 
 export default function ActivityPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(sampleTransactions);
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(
+    sampleTransactions,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch transaksi dari database setiap 3 detik untuk real-time
   useEffect(() => {
-    // Baca transaksi dari localStorage
-    if (typeof window !== "undefined") {
-      const savedTransactions = localStorage.getItem("novabank_transactions");
-      if (savedTransactions) {
-        try {
-          const parsed = JSON.parse(savedTransactions);
-          setTransactions([...parsed, ...sampleTransactions]);
-        } catch (error) {
-          setTransactions(sampleTransactions);
+    async function fetchTransactions() {
+      try {
+        const accessToken = localStorage.getItem("novabank_access_token");
+
+        if (!accessToken) {
+          return;
         }
+
+        setIsLoading(true);
+        const response = await fetch("/api/transactions", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const dbTransactions = (await response.json()) as Array<{
+          id?: string;
+          sender_account_id?: string;
+          receiver_account_id?: string;
+          amount?: number;
+          description?: string;
+          status?: string;
+          created_at?: string;
+        }>;
+
+        // Transform database transactions to UI format
+        const formattedTransactions: Transaction[] = dbTransactions.map((trx) => {
+          const date = trx.created_at
+            ? new Date(trx.created_at).toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : new Date().toLocaleDateString("id-ID");
+
+          const isIncome = (trx.amount || 0) > 0;
+          const amount = new Intl.NumberFormat("id-ID").format(Math.abs(trx.amount || 0));
+
+          return {
+            id: trx.id || `TRX-${Date.now()}`,
+            initial: isIncome ? "IN" : "OUT",
+            title: trx.description?.split(" - ")[0] || "Transaksi",
+            date,
+            description: trx.description,
+            amount: `${isIncome ? "+" : "-"}Rp ${amount}`,
+            status: trx.status,
+            sender_account_id: trx.sender_account_id,
+            receiver_account_id: trx.receiver_account_id,
+            created_at: trx.created_at,
+          };
+        });
+
+        // Combine dengan sample data
+        setTransactions([...formattedTransactions, ...sampleTransactions]);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        setIsLoading(false);
       }
     }
+
+    fetchTransactions();
+
+    // Polling setiap 3 detik untuk update real-time
+    const interval = setInterval(fetchTransactions, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -83,7 +152,11 @@ export default function ActivityPage() {
             </select>
           </div>
           <div className="transaction-list">
-            {filteredTransactions.length > 0 ? (
+            {isLoading && filteredTransactions.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
+                <p>Memuat transaksi...</p>
+              </div>
+            ) : filteredTransactions.length > 0 ? (
               filteredTransactions.map((item) => (
                 <div className="transaction-item" key={item.id}>
                   <span>{item.initial}</span>
@@ -92,7 +165,22 @@ export default function ActivityPage() {
                     <p>
                       {item.date} {item.category && `- ${item.category}`}
                     </p>
-                    {item.description && <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>{item.description}</p>}
+                    {item.description && (
+                      <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                        {item.description}
+                      </p>
+                    )}
+                    {item.status && (
+                      <p
+                        style={{
+                          fontSize: "11px",
+                          color: item.status === "completed" ? "var(--color-success)" : "var(--color-warning)",
+                          marginTop: "4px",
+                        }}
+                      >
+                        Status: {item.status}
+                      </p>
+                    )}
                   </div>
                   <b className={item.amount.startsWith("+") ? "income" : "expense"}>
                     {item.amount}
@@ -105,6 +193,18 @@ export default function ActivityPage() {
               </div>
             )}
           </div>
+          {isLoading && (
+            <p
+              style={{
+                fontSize: "12px",
+              color: "var(--text-muted)",
+                textAlign: "center",
+                marginTop: "12px",
+              }}
+            >
+              Memperbarui data transaksi...
+            </p>
+          )}
         </section>
       </main>
     </BankingLayout>

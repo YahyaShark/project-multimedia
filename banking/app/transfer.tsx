@@ -73,6 +73,10 @@ export default function TransferPage() {
       setError("Nama penerima harus diisi");
       return;
     }
+    if (destinationBank === "NovaBank" && destinationAccount === accountNumber) {
+      setError("Tidak dapat transfer ke rekening sendiri");
+      return;
+    }
 
     const nominalValue = parseCurrency(nominal);
     if (nominalValue < 10000) {
@@ -126,7 +130,17 @@ export default function TransferPage() {
         method: "POST",
       });
 
-      const data = (await response.json()) as Record<string, unknown>;
+      const text = await response.text();
+      let data: Record<string, unknown>;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Response text:", text);
+        setError("Terjadi kesalahan pada server. Periksa console untuk detail.");
+        setIsLoading(false);
+        return;
+      }
 
       if (!response.ok) {
         setError(data.error ? String(data.error) : "Gagal memproses transfer");
@@ -241,10 +255,10 @@ export default function TransferPage() {
               </select>
             </label>
             <label>
-              <span>Nomor rekening tujuan</span>
+              <span>Nomor rekening tujuan {destinationBank === "NovaBank" && "(Account Number)"}</span>
               <input
                 type="text"
-                placeholder="Masukkan nomor rekening"
+                placeholder={destinationBank === "NovaBank" ? "Contoh: 5378221090" : "Masukkan nomor rekening"}
                 value={destinationAccount}
                 onChange={(e) =>
                   setDestinationAccount(e.target.value.replace(/\D/g, "").slice(0, 16))
@@ -318,6 +332,11 @@ export default function TransferPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 style={{ marginBottom: "20px" }}>Konfirmasi Transfer</h2>
+            {transferData.destinationBank === "NovaBank" && (
+              <div style={{ backgroundColor: "rgba(76, 175, 80, 0.1)", padding: "12px", borderRadius: "6px", marginBottom: "16px", fontSize: "12px", color: "var(--color-success)" }}>
+                ✓ Transfer langsung ke pengguna NovaBank
+              </div>
+            )}
             <div style={{ marginBottom: "20px", fontSize: "14px", lineHeight: "1.8" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
                 <span style={{ color: "var(--text-muted)" }}>Ke Bank:</span>

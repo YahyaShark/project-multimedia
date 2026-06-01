@@ -1,10 +1,14 @@
+-- Drop existing tables and policies if they exist
+drop table if exists public.transactions cascade;
+drop table if exists public.profiles cascade;
+
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
   email text not null unique,
   account_number text not null unique,
   card_number text not null unique,
-  balance bigint not null default 24850000,
+  balance bigint not null default 0,
   created_at timestamptz not null default now()
 );
 
@@ -24,6 +28,11 @@ create table if not exists public.transactions (
 
 alter table public.profiles enable row level security;
 alter table public.transactions enable row level security;
+
+drop policy if exists "Users can read their own profile" on public.profiles;
+drop policy if exists "Users can update their own profile" on public.profiles;
+drop policy if exists "Users can read their own transactions" on public.transactions;
+drop policy if exists "Users can insert their own transactions" on public.transactions;
 
 create policy "Users can read their own profile"
 on public.profiles
