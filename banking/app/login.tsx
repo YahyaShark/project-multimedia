@@ -5,7 +5,7 @@ import { loadUserProfile, loginAccount, saveAuthSession } from "@/lib/supabase-a
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const session = await loginAccount(email, password);
+      const session = await loginAccount(username, password);
       saveAuthSession(session);
       if (session.access_token) {
         await loadUserProfile(session.access_token);
@@ -45,13 +45,13 @@ export default function LoginPage() {
 
         <form className="form-stack" onSubmit={handleSubmit}>
           <label>
-            <span>Email</span>
+            <span>Username</span>
             <input
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Masukkan email"
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="Masukkan username"
               required
-              type="email"
-              value={email}
+              type="text"
+              value={username}
             />
           </label>
           <label>

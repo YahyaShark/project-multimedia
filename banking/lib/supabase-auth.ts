@@ -13,6 +13,7 @@ type RegisterResponse = {
   email?: string;
   error?: string;
   fullName?: string;
+  username?: string;
 };
 
 type ProfileResponse = {
@@ -22,6 +23,7 @@ type ProfileResponse = {
   error?: string;
   full_name?: string;
   balance?: number;
+  username?: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -58,7 +60,11 @@ async function requestAuth(path: string, body: Record<string, unknown>) {
   return data;
 }
 
-export async function registerAccount(fullName: string, email: string, password: string) {
+export async function registerAccount(
+  fullName: string,
+  email: string,
+  password: string,
+) {
   const response = await fetch("/api/register", {
     body: JSON.stringify({
       email,
@@ -88,6 +94,10 @@ export async function registerAccount(fullName: string, email: string, password:
     localStorage.setItem("novabank_full_name", data.fullName);
   }
 
+  if (data.username) {
+    localStorage.setItem("novabank_username", data.username);
+  }
+
   return data;
 }
 
@@ -101,7 +111,27 @@ export async function createAuthAccount(fullName: string, email: string, passwor
   });
 }
 
-export async function loginAccount(email: string, password: string) {
+export async function loginAccount(username: string, password: string) {
+  const response = await fetch("/api/login", {
+    body: JSON.stringify({
+      password,
+      username,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+  const data = (await response.json()) as AuthResponse;
+
+  if (!response.ok) {
+    throw new Error(data.error_description || data.msg || data.error || "Login gagal.");
+  }
+
+  return data;
+}
+
+export async function loginWithEmail(email: string, password: string) {
   return requestAuth("/auth/v1/token?grant_type=password", {
     email,
     password,
@@ -130,6 +160,10 @@ export async function loadUserProfile(accessToken: string) {
 
   if (data.full_name) {
     localStorage.setItem("novabank_full_name", data.full_name);
+  }
+
+  if (data.username) {
+    localStorage.setItem("novabank_username", data.username);
   }
 
   if (data.balance !== undefined && data.balance !== null) {

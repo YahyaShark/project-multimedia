@@ -26,6 +26,7 @@ type SuccessResponse = {
   cardNumber: string;
   email: string;
   fullName: string;
+  username: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -118,6 +119,36 @@ async function insertProfile(body: Record<string, unknown>) {
   }
 }
 
+function normalizeUsername(username: string) {
+  return username.trim().toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function isValidUsername(username: string) {
+  return /^[a-z0-9_]{3,30}$/.test(username);
+}
+
+async function checkUsernameAvailability(username: string) {
+  const { serviceRoleKey: key, supabaseUrl: url } = getServerConfig();
+  const response = await fetch(
+    `${url}/rest/v1/profiles?username=eq.${encodeURIComponent(username)}&select=id&limit=1`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+    },
+  );
+  const data = (await response.json()) as AuthUserResponse[] | AuthUserResponse;
+
+  if (!response.ok) {
+    throw new Error(getSupabaseError(data as AuthUserResponse, "Gagal memeriksa username."));
+  }
+
+  if (Array.isArray(data) && data.length > 0) {
+    throw new Error("Username sudah digunakan.");
+  }
+}
+
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<SuccessResponse | ErrorResponse>,
@@ -133,8 +164,17 @@ export default async function handler(
     return response.status(400).json({ error: "Nama, email, dan password wajib diisi." });
   }
 
+  const normalizedUsername = normalizeUsername(fullName);
+
+  if (!isValidUsername(normalizedUsername)) {
+    return response.status(400).json({
+      error: "Username hanya boleh berisi huruf kecil, angka, dan underscore. Minimal 3 karakter.",
+    });
+  }
+
   try {
     await checkProfilesTable();
+    await checkUsernameAvailability(normalizedUsername);
 
     const accountNumber = generateAccountNumber();
     const cardNumber = generateCardNumber();
@@ -144,6 +184,7 @@ export default async function handler(
       password,
       user_metadata: {
         full_name: fullName,
+        username: normalizedUsername,
       },
     });
 
@@ -159,6 +200,7 @@ export default async function handler(
         email,
         full_name: fullName,
         id: user.id,
+        username: normalizedUsername,
       });
     } catch (error) {
       await deleteAuthUser(user.id);
@@ -170,6 +212,7 @@ export default async function handler(
       cardNumber,
       email,
       fullName,
+      username: normalizedUsername,
     });
   } catch (error) {
     return response.status(400).json({

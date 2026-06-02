@@ -5,6 +5,7 @@ drop table if exists public.profiles cascade;
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
+  username text not null unique,
   email text not null unique,
   account_number text not null unique,
   card_number text not null unique,
