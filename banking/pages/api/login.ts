@@ -16,6 +16,10 @@ type AuthResponse = {
 
 type Profile = {
   email?: string;
+  error?: string;
+  error_description?: string;
+  message?: string;
+  msg?: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,6 +40,19 @@ function getConfig() {
 
 function normalizeUsername(identifier: string) {
   return identifier.trim().toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function isMissingUsernameColumn(data: Profile | Profile[]) {
+  if (Array.isArray(data)) {
+    return false;
+  }
+
+  const message = data.error_description || data.msg || data.message || data.error || "";
+
+  return (
+    message.toLowerCase().includes("profiles.username") ||
+    message.toLowerCase().includes("column username")
+  );
 }
 
 async function getEmailByUsername(identifier: string) {
@@ -72,10 +89,14 @@ async function getEmailByUsername(identifier: string) {
       },
     },
   );
-  const usernameProfiles = (await usernameResponse.json()) as Profile[];
+  const usernameData = (await usernameResponse.json()) as Profile[] | Profile;
 
-  if (usernameResponse.ok && usernameProfiles[0]?.email) {
-    return usernameProfiles[0].email;
+  if (!usernameResponse.ok && isMissingUsernameColumn(usernameData)) {
+    throw new Error("Username tidak ditemukan. Coba login menggunakan email atau nama lengkap.");
+  }
+
+  if (Array.isArray(usernameData) && usernameData[0]?.email) {
+    return usernameData[0].email;
   }
 
   throw new Error("Username tidak ditemukan.");

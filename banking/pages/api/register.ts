@@ -51,6 +51,17 @@ function getSupabaseError(data: AuthUserResponse, fallback: string) {
   return data.error_description || data.msg || data.message || data.error || fallback;
 }
 
+function isMissingUsernameColumn(data: AuthUserResponse) {
+  const message = getSupabaseError(data, "");
+
+  return (
+    data.code === "PGRST204" ||
+    data.code === "42703" ||
+    message.toLowerCase().includes("profiles.username") ||
+    message.toLowerCase().includes("column username")
+  );
+}
+
 async function checkProfilesTable() {
   const { serviceRoleKey: key, supabaseUrl: url } = getServerConfig();
   const response = await fetch(`${url}/rest/v1/profiles?select=id&limit=1`, {
@@ -115,6 +126,13 @@ async function insertProfile(body: Record<string, unknown>) {
   const data = text ? (JSON.parse(text) as AuthUserResponse) : {};
 
   if (!response.ok) {
+    if (isMissingUsernameColumn(data) && "username" in body) {
+      const profileWithoutUsername = { ...body };
+      delete profileWithoutUsername.username;
+
+      return insertProfile(profileWithoutUsername);
+    }
+
     throw new Error(getSupabaseError(data, "Gagal menyimpan profil."));
   }
 }
@@ -141,7 +159,13 @@ async function checkUsernameAvailability(username: string) {
   const data = (await response.json()) as AuthUserResponse[] | AuthUserResponse;
 
   if (!response.ok) {
-    throw new Error(getSupabaseError(data as AuthUserResponse, "Gagal memeriksa username."));
+    const errorData = data as AuthUserResponse;
+
+    if (isMissingUsernameColumn(errorData)) {
+      return;
+    }
+
+    throw new Error(getSupabaseError(errorData, "Gagal memeriksa username."));
   }
 
   if (Array.isArray(data) && data.length > 0) {

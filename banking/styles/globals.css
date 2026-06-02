@@ -255,6 +255,48 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(31, 122, 140, 0.12);
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 52px;
+  width: 100%;
+}
+
+.password-toggle {
+  align-items: center;
+  background: var(--soft-strong);
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  color: var(--primary);
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+}
+
+.password-toggle svg {
+  fill: none;
+  height: 20px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 20px;
+}
+
+.password-toggle:hover {
+  background: var(--panel);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .form-row,
 .panel-heading,
 .filter-row,
