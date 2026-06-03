@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 const navItems = [
@@ -14,18 +14,23 @@ const navItems = [
 
 export function BankingLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [fullName, setFullName] = useState("Nasabah");
-  const [initials, setInitials] = useState("NB");
-
-  useEffect(() => {
-    const savedFullName = localStorage.getItem("novabank_full_name");
-    if (savedFullName) {
-      setFullName(savedFullName);
-      const names = savedFullName.split(" ");
-      const newInitials = names.map((n) => n.charAt(0)).join("").toUpperCase();
-      setInitials(newInitials || "NB");
+  const [{ fullName, initials }] = useState(() => {
+    if (typeof window === "undefined") {
+      return { fullName: "Nasabah", initials: "NB" };
     }
-  }, []);
+
+    const savedFullName = localStorage.getItem("novabank_full_name") || "Nasabah";
+    const savedInitials = savedFullName
+      .split(" ")
+      .map((name) => name.charAt(0))
+      .join("")
+      .toUpperCase();
+
+    return {
+      fullName: savedFullName,
+      initials: savedInitials || "NB",
+    };
+  });
 
   const firstName = fullName.split(" ")[0];
 

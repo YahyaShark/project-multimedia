@@ -1,1 +1,1 @@
-export { default } from "@/app/register";
+export { default } from "@/screens/register";

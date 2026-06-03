@@ -32,13 +32,6 @@ export default function TransferPage() {
     return localStorage.getItem("novabank_account_number") || "537822109034";
   });
 
-  const [fullName] = useState(() => {
-    if (typeof window === "undefined") {
-      return "Nasabah";
-    }
-    return localStorage.getItem("novabank_full_name") || "Nasabah";
-  });
-
   const [sourceAccount, setSourceAccount] = useState("primary");
   const [destinationBank, setDestinationBank] = useState("");
   const [destinationAccount, setDestinationAccount] = useState("");

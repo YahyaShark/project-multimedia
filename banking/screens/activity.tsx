@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
 import { transactions as sampleTransactions } from "@/lib/sample-data";
@@ -21,9 +21,6 @@ type Transaction = {
 
 export default function ActivityPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(
-    sampleTransactions,
-  );
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
@@ -105,7 +102,7 @@ export default function ActivityPage() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
+  const filteredTransactions = useMemo(() => {
     let result = transactions;
 
     // Filter berdasarkan tipe
@@ -125,7 +122,7 @@ export default function ActivityPage() {
       );
     }
 
-    setFilteredTransactions(result);
+    return result;
   }, [searchQuery, filterType, transactions]);
 
   return (

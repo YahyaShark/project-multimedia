@@ -208,7 +208,7 @@ export default async function handler(
     // Cek apakah tujuan adalah pengguna NovaBank (destinationAccount adalah account_number)
     const recipientProfile = await getProfileByAccountNumber(destinationAccount);
 
-    let newSenderBalance = senderProfile.balance - nominal;
+    const newSenderBalance = senderProfile.balance - nominal;
 
     if (recipientProfile && recipientProfile.id) {
       // Transfer antar pengguna NovaBank

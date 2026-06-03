@@ -16,22 +16,24 @@ export default function BalancePage() {
     return localStorage.getItem("novabank_account_number") || "537822109034";
   });
 
-  const [fullName, setFullName] = useState("Nasabah");
-  const [balance, setBalance] = useState(24850000);
+  const [fullName] = useState(() => {
+    if (typeof window === "undefined") {
+      return "Nasabah";
+    }
+
+    return localStorage.getItem("novabank_full_name") || "Nasabah";
+  });
+
+  const [balance, setBalance] = useState(() => {
+    if (typeof window === "undefined") {
+      return 24850000;
+    }
+
+    return parseInt(localStorage.getItem("novabank_balance") || "24850000");
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Baca saldo dari localStorage
-    const savedBalance = localStorage.getItem("novabank_balance");
-    if (savedBalance) {
-      setBalance(parseInt(savedBalance));
-    }
-
-    const savedFullName = localStorage.getItem("novabank_full_name");
-    if (savedFullName) {
-      setFullName(savedFullName);
-    }
 
     // Listen untuk perubahan balance
     const handleStorageChange = (e: StorageEvent) => {

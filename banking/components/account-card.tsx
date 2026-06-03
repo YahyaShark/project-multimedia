@@ -22,14 +22,16 @@ export function AccountCard() {
     return newCardNumber;
   });
 
-  const [balance, setBalance] = useState(INITIAL_BALANCE);
+  const [balance, setBalance] = useState(() => {
+    if (typeof window === "undefined") {
+      return INITIAL_BALANCE;
+    }
+
+    return parseInt(localStorage.getItem("novabank_balance") || String(INITIAL_BALANCE));
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Baca balance dari localStorage (di-set oleh loadUserProfile saat login)
-    const savedBalance = localStorage.getItem("novabank_balance");
-    setBalance(parseInt(savedBalance || String(INITIAL_BALANCE)));
 
     // Listen untuk perubahan balance dari tab/window lain
     const handleStorageChange = (e: StorageEvent) => {

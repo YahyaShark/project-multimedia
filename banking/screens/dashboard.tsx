@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AccountCard } from "@/components/account-card";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
@@ -19,22 +19,23 @@ type Transaction = {
 };
 
 export default function DashboardPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
-
-  useEffect(() => {
-    // Baca transaksi baru dari localStorage
-    if (typeof window !== "undefined") {
-      const savedTransactions = localStorage.getItem("novabank_transactions");
-      if (savedTransactions) {
-        try {
-          const parsed = JSON.parse(savedTransactions);
-          setTransactions([...parsed, ...sampleTransactions]);
-        } catch (error) {
-          setTransactions(sampleTransactions);
-        }
-      }
+  const [transactions] = useState<Transaction[]>(() => {
+    if (typeof window === "undefined") {
+      return sampleTransactions;
     }
-  }, []);
+
+    const savedTransactions = localStorage.getItem("novabank_transactions");
+    if (!savedTransactions) {
+      return sampleTransactions;
+    }
+
+    try {
+      const parsed = JSON.parse(savedTransactions) as Transaction[];
+      return [...parsed, ...sampleTransactions];
+    } catch {
+      return sampleTransactions;
+    }
+  });
 
   return (
     <BankingLayout>
