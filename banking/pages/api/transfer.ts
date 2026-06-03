@@ -185,6 +185,12 @@ export default async function handler(
     });
   }
 
+  if (destinationBank !== "NovaBank") {
+    return response.status(400).json({
+      error: "Transfer hanya tersedia untuk rekening NovaBank.",
+    });
+  }
+
   if (nominal < 10000 || nominal > 1000000000) {
     return response.status(400).json({
       error: "Nominal transfer harus antara Rp 10.000 - Rp 1.000.000.000",
@@ -205,70 +211,59 @@ export default async function handler(
       });
     }
 
+    if (destinationAccount === senderProfile.account_number) {
+      return response.status(400).json({
+        error: "Tidak dapat transfer ke rekening sendiri.",
+      });
+    }
+
     // Cek apakah tujuan adalah pengguna NovaBank (destinationAccount adalah account_number)
     const recipientProfile = await getProfileByAccountNumber(destinationAccount);
 
     const newSenderBalance = senderProfile.balance - nominal;
 
-    if (recipientProfile && recipientProfile.id) {
-      // Transfer antar pengguna NovaBank
-      const newRecipientBalance = (recipientProfile.balance || 0) + nominal;
-
-      // Update balance kedua pengguna
-      await updateProfileBalance(senderProfile.id, newSenderBalance);
-      await updateProfileBalance(recipientProfile.id, newRecipientBalance);
-
-      // Insert transaksi untuk pengirim
-      await insertTransaction(
-        senderProfile.id,
-        "transfer",
-        `Transfer ke ${recipientProfile.full_name}`,
-        -nominal,
-        "NovaBank",
-        destinationAccount,
-        recipientProfile.full_name,
-        notes,
-      );
-
-      // Insert transaksi untuk penerima
-      await insertTransaction(
-        recipientProfile.id,
-        "transfer",
-        `Transfer dari ${senderProfile.full_name}`,
-        nominal,
-        "NovaBank",
-        senderProfile.account_number,
-        senderProfile.full_name,
-        notes,
-      );
-
-      return response.status(201).json({
-        message: "Transfer ke pengguna NovaBank berhasil diproses.",
-        newBalance: newSenderBalance,
-        success: true,
-      });
-    } else {
-      // Transfer ke bank eksternal (simulasi)
-      await updateProfileBalance(senderProfile.id, newSenderBalance);
-
-      // Insert transaksi untuk pengirim
-      await insertTransaction(
-        senderProfile.id,
-        "transfer",
-        `Transfer ke ${destinationBank}`,
-        -nominal,
-        destinationBank,
-        destinationAccount,
-        destinationName,
-        notes,
-      );
-
-      return response.status(201).json({
-        message: "Transfer ke bank eksternal berhasil diproses.",
-        newBalance: newSenderBalance,
-        success: true,
+    if (!recipientProfile || !recipientProfile.id) {
+      return response.status(404).json({
+        error: "Rekening NovaBank tujuan tidak ditemukan.",
       });
     }
+
+    // Transfer antar pengguna NovaBank
+    const newRecipientBalance = (recipientProfile.balance || 0) + nominal;
+
+    // Update balance kedua pengguna
+    await updateProfileBalance(senderProfile.id, newSenderBalance);
+    await updateProfileBalance(recipientProfile.id, newRecipientBalance);
+
+    // Insert transaksi untuk pengirim
+    await insertTransaction(
+      senderProfile.id,
+      "transfer",
+      `Transfer ke ${recipientProfile.full_name}`,
+      -nominal,
+      "NovaBank",
+      destinationAccount,
+      recipientProfile.full_name,
+      notes,
+    );
+
+    // Insert transaksi untuk penerima
+    await insertTransaction(
+      recipientProfile.id,
+      "transfer",
+      `Transfer dari ${senderProfile.full_name}`,
+      nominal,
+      "NovaBank",
+      senderProfile.account_number,
+      senderProfile.full_name,
+      notes,
+    );
+
+    return response.status(201).json({
+      message: "Transfer ke pengguna NovaBank berhasil diproses.",
+      newBalance: newSenderBalance,
+      success: true,
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Transfer gagal.";
     console.error("[Transfer API Error]", errorMessage, error);

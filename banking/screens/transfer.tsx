@@ -33,7 +33,7 @@ export default function TransferPage() {
   });
 
   const [sourceAccount, setSourceAccount] = useState("primary");
-  const [destinationBank, setDestinationBank] = useState("");
+  const [destinationBank, setDestinationBank] = useState("NovaBank");
   const [destinationAccount, setDestinationAccount] = useState("");
   const [destinationName, setDestinationName] = useState("");
   const [nominal, setNominal] = useState("");
@@ -54,8 +54,8 @@ export default function TransferPage() {
     setError("");
 
     // Validasi
-    if (!destinationBank) {
-      setError("Pilih bank tujuan terlebih dahulu");
+    if (destinationBank !== "NovaBank") {
+      setError("Transfer hanya tersedia untuk rekening NovaBank");
       return;
     }
     if (!destinationAccount || destinationAccount.length < 8) {
@@ -181,7 +181,7 @@ export default function TransferPage() {
       // Reset form
       setTimeout(() => {
         setSourceAccount("primary");
-        setDestinationBank("");
+        setDestinationBank("NovaBank");
         setDestinationAccount("");
         setDestinationName("");
         setNominal("");
@@ -238,20 +238,15 @@ export default function TransferPage() {
             </label>
             <label>
               <span>Bank tujuan</span>
-              <select value={destinationBank} onChange={(e) => setDestinationBank(e.target.value)}>
-                <option value="">Pilih bank tujuan</option>
+              <select value={destinationBank} onChange={(e) => setDestinationBank(e.target.value)} disabled>
                 <option value="NovaBank">NovaBank</option>
-                <option value="Bank Mandiri">Bank Mandiri</option>
-                <option value="BCA">BCA</option>
-                <option value="BRI">BRI</option>
-                <option value="BNI">BNI</option>
               </select>
             </label>
             <label>
-              <span>Nomor rekening tujuan {destinationBank === "NovaBank" && "(Account Number)"}</span>
+              <span>Nomor rekening tujuan (Account Number)</span>
               <input
                 type="text"
-                placeholder={destinationBank === "NovaBank" ? "Contoh: 5378221090" : "Masukkan nomor rekening"}
+                placeholder="Contoh: 5378221090"
                 value={destinationAccount}
                 onChange={(e) =>
                   setDestinationAccount(e.target.value.replace(/\D/g, "").slice(0, 16))
