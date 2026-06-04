@@ -20,7 +20,7 @@ type Transaction = {
 };
 
 export default function ActivityPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +86,7 @@ export default function ActivityPage() {
         });
 
         // Combine dengan sample data
-        setTransactions([...formattedTransactions, ...sampleTransactions]);
+        setTransactions(formattedTransactions);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching transactions:", error);

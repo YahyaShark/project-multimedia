@@ -95,7 +95,9 @@ export default async function handler(
 
   try {
     const userId = await getUserId(token);
+    console.log("USER ID:", userId);
     const accountId = await getUserAccountId(userId);
+    console.log("ACCOUNT ID:", accountId);
     const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
 
     const queryResponse = await fetch(
@@ -113,6 +115,7 @@ export default async function handler(
     }
 
     const transactions = (await queryResponse.json()) as Transaction[];
+    console.log("TRANSACTIONS:", transactions);
     return response.status(200).json(transactions);
   } catch (error) {
     return response.status(400).json({
