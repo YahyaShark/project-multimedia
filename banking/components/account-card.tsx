@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { formatBankNumber, generateCardNumber } from "@/lib/banking-numbers";
 
 const INITIAL_BALANCE = 0;
 
 export function AccountCard() {
+  const [showBalance, setShowBalance] = useState(false);
+
   const [cardNumber] = useState(() => {
     if (typeof window === "undefined") {
       return "537822109034";
@@ -27,13 +30,14 @@ export function AccountCard() {
       return INITIAL_BALANCE;
     }
 
-    return parseInt(localStorage.getItem("novabank_balance") || String(INITIAL_BALANCE));
+    return parseInt(
+      localStorage.getItem("novabank_balance") || String(INITIAL_BALANCE)
+    );
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Listen untuk perubahan balance dari tab/window lain
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "novabank_balance" && e.newValue) {
         setBalance(parseInt(e.newValue));
@@ -52,13 +56,42 @@ export function AccountCard() {
         <span>NovaBank Platinum</span>
         <b>VISA</b>
       </div>
+
       <div>
         <p>Saldo utama</p>
-        <h2 suppressHydrationWarning>Rp {formattedBalance}</h2>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+        >
+          <h2 suppressHydrationWarning>
+            {showBalance ? `Rp ${formattedBalance}` : "Rp ********"}
+          </h2>
+
+          <button
+            onClick={() => setShowBalance(!showBalance)}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {showBalance ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
       </div>
+
       <div className="account-card-bottom">
-        <span suppressHydrationWarning>{formatBankNumber(cardNumber)}</span>
-        <span>12/29</span>  
+        <span suppressHydrationWarning>
+          {formatBankNumber(cardNumber)}
+        </span>
+        <span>12/29</span>
       </div>
     </article>
   );
