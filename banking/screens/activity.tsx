@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
-import { transactions as sampleTransactions } from "@/lib/sample-data";
 
 type Transaction = {
   id: string;
@@ -194,7 +193,7 @@ export default function ActivityPage() {
             <p
               style={{
                 fontSize: "12px",
-              color: "var(--text-muted)",
+                color: "var(--text-muted)",
                 textAlign: "center",
                 marginTop: "12px",
               }}
