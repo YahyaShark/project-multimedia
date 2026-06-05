@@ -9,11 +9,15 @@ type SupabaseUser = {
 
 type Transaction = {
   id?: string;
-  sender_account_id?: string;
-  receiver_account_id?: string;
-  amount?: number;
+  user_id?: string;
+  type?: string;
+  title?: string;
   description?: string;
-  status?: string;
+  amount?: number;
+  destination_bank?: string;
+  destination_account?: string;
+  destination_name?: string;
+  notes?: string;
   created_at?: string;
   error?: string;
 };
@@ -57,27 +61,6 @@ async function getUserId(token: string) {
   return data.id;
 }
 
-async function getUserAccountId(userId: string) {
-  const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
-  const response = await fetch(`${url}/rest/v1/accounts?user_id=eq.${userId}&select=id&limit=1`, {
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Gagal mengambil data akun.");
-  }
-
-  const accounts = (await response.json()) as Array<{ id: string }>;
-  if (!accounts[0]) {
-    throw new Error("Akun pengguna tidak ditemukan.");
-  }
-
-  return accounts[0].id;
-}
-
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<Transaction[] | ErrorResponse>,
@@ -95,13 +78,10 @@ export default async function handler(
 
   try {
     const userId = await getUserId(token);
-    console.log("USER ID:", userId);
-    const accountId = await getUserAccountId(userId);
-    console.log("ACCOUNT ID:", accountId);
     const { serviceRoleKey: key, supabaseUrl: url } = getConfig();
 
     const queryResponse = await fetch(
-      `${url}/rest/v1/transactions?sender_account_id=eq.${accountId}&order=created_at.desc&select=id,sender_account_id,receiver_account_id,amount,description,status,created_at`,
+      `${url}/rest/v1/transactions?user_id=eq.${userId}&order=created_at.desc&select=id,user_id,type,title,description,amount,destination_bank,destination_account,destination_name,notes,created_at`,
       {
         headers: {
           apikey: key,
@@ -115,7 +95,6 @@ export default async function handler(
     }
 
     const transactions = (await queryResponse.json()) as Transaction[];
-    console.log("TRANSACTIONS:", transactions);
     return response.status(200).json(transactions);
   } catch (error) {
     return response.status(400).json({

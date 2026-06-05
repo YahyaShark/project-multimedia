@@ -1,50 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AccountCard } from "@/components/account-card";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { formatBankNumber } from "@/lib/banking-numbers";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 export default function BalancePage() {
-  const [accountNumber] = useState(() => {
-    if (typeof window === "undefined") {
-      return "537822109034";
-    }
-
-    return localStorage.getItem("novabank_account_number") || "537822109034";
-  });
-
-  const [fullName] = useState(() => {
-    if (typeof window === "undefined") {
-      return "Nasabah";
-    }
-
-    return localStorage.getItem("novabank_full_name") || "Nasabah";
-  });
-
-  const [balance, setBalance] = useState(() => {
-    if (typeof window === "undefined") {
-      return 24850000;
-    }
-
-    return parseInt(localStorage.getItem("novabank_balance") || "24850000");
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Listen untuk perubahan balance
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "novabank_balance" && e.newValue) {
-        setBalance(parseInt(e.newValue));
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  const accountNumber = useLocalStorageValue("novabank_account_number", "537822109034");
+  const fullName = useLocalStorageValue("novabank_full_name", "Nasabah");
+  const savedBalance = useLocalStorageValue("novabank_balance", "24850000");
+  const balance = parseInt(savedBalance) || 24850000;
 
   const formattedBalance = new Intl.NumberFormat("id-ID").format(balance);
   const limitTransfer = new Intl.NumberFormat("id-ID").format(50000000);

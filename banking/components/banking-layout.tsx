@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
 import type { ReactNode } from "react";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
@@ -14,25 +14,15 @@ const navItems = [
 
 export function BankingLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [{ fullName, initials }] = useState(() => {
-    if (typeof window === "undefined") {
-      return { fullName: "Nasabah", initials: "NB" };
-    }
+  const fullName = useLocalStorageValue("novabank_full_name", "Nasabah");
 
-    const savedFullName = localStorage.getItem("novabank_full_name") || "Nasabah";
-    const savedInitials = savedFullName
+  const firstName = fullName.split(" ")[0];
+  const initials =
+    fullName
       .split(" ")
       .map((name) => name.charAt(0))
       .join("")
-      .toUpperCase();
-
-    return {
-      fullName: savedFullName,
-      initials: savedInitials || "NB",
-    };
-  });
-
-  const firstName = fullName.split(" ")[0];
+      .toUpperCase() || "NB";
 
   return (
     <div className="app-shell">

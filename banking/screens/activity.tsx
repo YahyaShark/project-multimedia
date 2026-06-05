@@ -9,12 +9,11 @@ type Transaction = {
   initial: string;
   title: string;
   date: string;
-  category?: string;
+  type?: string;
   amount: string;
   description?: string;
-  sender_account_id?: string;
-  receiver_account_id?: string;
-  status?: string;
+  destination?: string;
+  notes?: string;
   created_at?: string;
 };
 
@@ -31,6 +30,7 @@ export default function ActivityPage() {
         const accessToken = localStorage.getItem("novabank_access_token");
 
         if (!accessToken) {
+          setTransactions([]);
           return;
         }
 
@@ -42,16 +42,20 @@ export default function ActivityPage() {
         });
 
         if (!response.ok) {
+          setTransactions([]);
           return;
         }
 
         const dbTransactions = (await response.json()) as Array<{
           id?: string;
-          sender_account_id?: string;
-          receiver_account_id?: string;
-          amount?: number;
+          type?: string;
+          title?: string;
           description?: string;
-          status?: string;
+          amount?: number;
+          destination_bank?: string;
+          destination_account?: string;
+          destination_name?: string;
+          notes?: string;
           created_at?: string;
         }>;
 
@@ -73,22 +77,25 @@ export default function ActivityPage() {
           return {
             id: trx.id || `TRX-${Date.now()}`,
             initial: isIncome ? "IN" : "OUT",
-            title: trx.description?.split(" - ")[0] || "Transaksi",
+            title: trx.title || (isIncome ? "Dana masuk" : "Dana keluar"),
             date,
             description: trx.description,
             amount: `${isIncome ? "+" : "-"}Rp ${amount}`,
-            status: trx.status,
-            sender_account_id: trx.sender_account_id,
-            receiver_account_id: trx.receiver_account_id,
+            destination: [trx.destination_bank, trx.destination_account, trx.destination_name]
+              .filter(Boolean)
+              .join(" - "),
+            notes: trx.notes,
+            type: trx.type,
             created_at: trx.created_at,
           };
         });
 
-        // Combine dengan sample data
         setTransactions(formattedTransactions);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching transactions:", error);
+        setTransactions([]);
+      } finally {
         setIsLoading(false);
       }
     }
@@ -158,23 +165,15 @@ export default function ActivityPage() {
                   <span>{item.initial}</span>
                   <div>
                     <strong>{item.title}</strong>
-                    <p>
-                      {item.date} {item.category && `- ${item.category}`}
-                    </p>
+                    <p>{item.date}</p>
                     {item.description && (
                       <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
                         {item.description}
                       </p>
                     )}
-                    {item.status && (
-                      <p
-                        style={{
-                          fontSize: "11px",
-                          color: item.status === "completed" ? "var(--color-success)" : "var(--color-warning)",
-                          marginTop: "4px",
-                        }}
-                      >
-                        Status: {item.status}
+                    {item.destination && (
+                      <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                        {item.destination}
                       </p>
                     )}
                   </div>

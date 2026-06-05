@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo } from "react";
 import { AccountCard } from "@/components/account-card";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { transactions as sampleTransactions } from "@/lib/sample-data";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 type Transaction = {
   id: string;
@@ -19,23 +20,20 @@ type Transaction = {
 };
 
 export default function DashboardPage() {
-  const [transactions] = useState<Transaction[]>(() => {
-    if (typeof window === "undefined") {
-      return sampleTransactions;
-    }
-
-    const savedTransactions = localStorage.getItem("novabank_transactions");
+  const savedTransactions = useLocalStorageValue("novabank_transactions", "");
+  const baseTransactions: Transaction[] = sampleTransactions;
+  const transactions = useMemo(() => {
     if (!savedTransactions) {
-      return sampleTransactions;
+      return baseTransactions;
     }
 
     try {
       const parsed = JSON.parse(savedTransactions) as Transaction[];
-      return [...parsed, ...sampleTransactions];
+      return [...parsed, ...baseTransactions];
     } catch {
-      return sampleTransactions;
+      return baseTransactions;
     }
-  });
+  }, [baseTransactions, savedTransactions]);
 
   return (
     <BankingLayout>

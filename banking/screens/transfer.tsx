@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { BankingLayout } from "@/components/banking-layout";
 import { PageHeader } from "@/components/page-header";
 import { formatBankNumber } from "@/lib/banking-numbers";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 type TransferData = {
   sourceAccount: string;
@@ -25,12 +26,7 @@ function parseCurrency(value: string): number {
 }
 
 export default function TransferPage() {
-  const [accountNumber] = useState(() => {
-    if (typeof window === "undefined") {
-      return "537822109034";
-    }
-    return localStorage.getItem("novabank_account_number") || "537822109034";
-  });
+  const accountNumber = useLocalStorageValue("novabank_account_number", "537822109034");
 
   const [sourceAccount, setSourceAccount] = useState("primary");
   const [destinationBank, setDestinationBank] = useState("NovaBank");
@@ -297,27 +293,15 @@ export default function TransferPage() {
 
       {showConfirmation && transferData && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
+          className="transfer-modal-overlay"
           onClick={() => setShowConfirmation(false)}
+          role="presentation"
         >
           <div
-            style={{
-              backgroundColor: "var(--bg-primary)",
-              borderRadius: "12px",
-              padding: "32px",
-              maxWidth: "400px",
-              width: "90%",
-              boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-            }}
+            aria-modal="true"
+            className="transfer-modal"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
           >
             <h2 style={{ marginBottom: "20px" }}>Konfirmasi Transfer</h2>
             {transferData.destinationBank === "NovaBank" && (

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { formatBankNumber, generateCardNumber } from "@/lib/banking-numbers";
+import { useState } from "react";
+import { formatBankNumber } from "@/lib/banking-numbers";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 const INITIAL_BALANCE = 0;
 
@@ -37,45 +38,9 @@ function EyeIcon({ hidden }: { hidden: boolean }) {
 
 export function AccountCard() {
   const [showBalance, setShowBalance] = useState(false);
-
-  const [cardNumber] = useState(() => {
-    if (typeof window === "undefined") {
-      return "537822109034";
-    }
-
-    const savedCardNumber = localStorage.getItem("novabank_card_number");
-
-    if (savedCardNumber) {
-      return savedCardNumber;
-    }
-
-    const newCardNumber = generateCardNumber();
-    localStorage.setItem("novabank_card_number", newCardNumber);
-    return newCardNumber;
-  });
-
-  const [balance, setBalance] = useState(() => {
-    if (typeof window === "undefined") {
-      return INITIAL_BALANCE;
-    }
-
-    return parseInt(
-      localStorage.getItem("novabank_balance") || String(INITIAL_BALANCE)
-    );
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "novabank_balance" && e.newValue) {
-        setBalance(parseInt(e.newValue));
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  const cardNumber = useLocalStorageValue("novabank_card_number", "537822109034");
+  const savedBalance = useLocalStorageValue("novabank_balance", String(INITIAL_BALANCE));
+  const balance = parseInt(savedBalance) || INITIAL_BALANCE;
 
   const formattedBalance = new Intl.NumberFormat("id-ID").format(balance);
 

@@ -126,6 +126,7 @@ async function insertTransaction(
   userId: string,
   type: string,
   title: string,
+  description: string,
   amount: number,
   destinationBank?: string,
   destinationAccount?: string,
@@ -138,6 +139,7 @@ async function insertTransaction(
       user_id: userId,
       type,
       title,
+      description,
       amount,
       destination_bank: destinationBank,
       destination_account: destinationAccount,
@@ -158,7 +160,7 @@ async function insertTransaction(
     throw new Error("Gagal menyimpan transaksi.");
   }
 
-  return await response.json();
+  return (await response.json()) as Array<{ id?: string }>;
 }
 
 export default async function handler(
@@ -236,10 +238,13 @@ export default async function handler(
     await updateProfileBalance(recipientProfile.id, newRecipientBalance);
 
     // Insert transaksi untuk pengirim
-    await insertTransaction(
+    const senderTransaction = await insertTransaction(
       senderProfile.id,
       "transfer",
       `Transfer ke ${recipientProfile.full_name}`,
+      notes
+        ? `Ke ${recipientProfile.full_name} - ${notes}`
+        : `Ke ${recipientProfile.full_name}`,
       -nominal,
       "NovaBank",
       destinationAccount,
@@ -252,6 +257,9 @@ export default async function handler(
       recipientProfile.id,
       "transfer",
       `Transfer dari ${senderProfile.full_name}`,
+      notes
+        ? `Dari ${senderProfile.full_name} - ${notes}`
+        : `Dari ${senderProfile.full_name}`,
       nominal,
       "NovaBank",
       senderProfile.account_number,
@@ -263,6 +271,7 @@ export default async function handler(
       message: "Transfer ke pengguna NovaBank berhasil diproses.",
       newBalance: newSenderBalance,
       success: true,
+      transactionId: senderTransaction[0]?.id,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Transfer gagal.";
