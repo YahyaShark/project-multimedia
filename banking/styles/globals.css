@@ -787,6 +787,11 @@ select:focus {
   flex: 1;
 }
 
+.download-action {
+  min-width: 152px;
+  white-space: nowrap;
+}
+
 .detail-grid {
   display: grid;
   gap: 18px;
