@@ -225,6 +225,7 @@ export default function TransferPage() {
                 value={sourceAccount}
                 onChange={(e) => setSourceAccount(e.target.value)}
                 disabled
+                style={{ appearance: "none", WebkitAppearance: "none", MozAppearance: "none" }}
               >
                 <option value="primary" suppressHydrationWarning>
                   NovaBank Utama - {formatBankNumber(accountNumber)}
@@ -234,7 +235,12 @@ export default function TransferPage() {
             </label>
             <label>
               <span>Bank tujuan</span>
-              <select value={destinationBank} onChange={(e) => setDestinationBank(e.target.value)} disabled>
+              <select 
+                value={destinationBank} 
+                onChange={(e) => setDestinationBank(e.target.value)} 
+                disabled
+                style={{ appearance: "none", WebkitAppearance: "none", MozAppearance: "none" }}
+              >
                 <option value="NovaBank">NovaBank</option>
               </select>
             </label>

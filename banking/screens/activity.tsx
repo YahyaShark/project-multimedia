@@ -59,11 +59,13 @@ function formatFilenameDate() {
     .slice(0, 19);
 }
 
-function downloadTransactionsAsPng(transactions: Transaction[]) {
+// Mengubah logika agar hanya menerima satu object transaksi tunggal
+function downloadSingleTransactionAsPng(transaction: Transaction) {
   const rowHeight = 118;
   const headerHeight = 210;
   const footerHeight = 80;
-  const height = headerHeight + Math.max(transactions.length, 1) * rowHeight + footerHeight;
+  // Tinggi disesuaikan konstan karena hanya ada 1 baris transaksi
+  const height = headerHeight + rowHeight + footerHeight; 
   const canvas = document.createElement("canvas");
   const scale = Math.max(window.devicePixelRatio || 1, 2);
   const context = canvas.getContext("2d");
@@ -92,7 +94,7 @@ function downloadTransactionsAsPng(transactions: Transaction[]) {
 
   context.fillStyle = "#17202f";
   context.font = "800 46px Arial, Helvetica, sans-serif";
-  context.fillText("Aktivitas Transaksi", PNG_PADDING, 148);
+  context.fillText("Detail Transaksi", PNG_PADDING, 148);
 
   context.fillStyle = "#647084";
   context.font = "400 22px Arial, Helvetica, sans-serif";
@@ -108,72 +110,61 @@ function downloadTransactionsAsPng(transactions: Transaction[]) {
     188,
   );
 
-  let y = headerHeight;
+  const y = headerHeight;
+  const isIncome = transaction.amount.startsWith("+");
 
-  if (transactions.length === 0) {
-    context.fillStyle = "#647084";
-    context.font = "500 26px Arial, Helvetica, sans-serif";
-    context.fillText("Tidak ada transaksi yang sesuai.", PNG_PADDING, y + 52);
-  } else {
-    transactions.forEach((item) => {
-      const isIncome = item.amount.startsWith("+");
+  context.fillStyle = "#fbfdff";
+  context.beginPath();
+  context.roundRect(PNG_PADDING, y, PNG_WIDTH - PNG_PADDING * 2, rowHeight - 18, 14);
+  context.fill();
 
-      context.fillStyle = "#fbfdff";
-      context.beginPath();
-      context.roundRect(PNG_PADDING, y, PNG_WIDTH - PNG_PADDING * 2, rowHeight - 18, 14);
-      context.fill();
+  context.strokeStyle = "#dfe6ef";
+  context.lineWidth = 1;
+  context.stroke();
 
-      context.strokeStyle = "#dfe6ef";
-      context.lineWidth = 1;
-      context.stroke();
+  context.fillStyle = "#0f2a43";
+  context.beginPath();
+  context.roundRect(PNG_PADDING + 22, y + 24, 58, 58, 12);
+  context.fill();
 
-      context.fillStyle = "#0f2a43";
-      context.beginPath();
-      context.roundRect(PNG_PADDING + 22, y + 24, 58, 58, 12);
-      context.fill();
+  context.fillStyle = "#ffffff";
+  context.font = "800 18px Arial, Helvetica, sans-serif";
+  context.textAlign = "center";
+  context.fillText(transaction.initial, PNG_PADDING + 51, y + 60);
+  context.textAlign = "left";
 
-      context.fillStyle = "#ffffff";
-      context.font = "800 18px Arial, Helvetica, sans-serif";
-      context.textAlign = "center";
-      context.fillText(item.initial, PNG_PADDING + 51, y + 60);
-      context.textAlign = "left";
+  context.fillStyle = "#17202f";
+  context.font = "800 24px Arial, Helvetica, sans-serif";
+  context.fillText(transaction.title, PNG_PADDING + 104, y + 34);
 
-      context.fillStyle = "#17202f";
-      context.font = "800 24px Arial, Helvetica, sans-serif";
-      context.fillText(item.title, PNG_PADDING + 104, y + 34);
+  context.fillStyle = "#647084";
+  context.font = "400 18px Arial, Helvetica, sans-serif";
+  context.fillText(transaction.date, PNG_PADDING + 104, y + 63);
 
-      context.fillStyle = "#647084";
-      context.font = "400 18px Arial, Helvetica, sans-serif";
-      context.fillText(item.date, PNG_PADDING + 104, y + 63);
-
-      if (item.description || item.destination) {
-        context.font = "400 16px Arial, Helvetica, sans-serif";
-        drawWrappedText(
-          context,
-          [item.description, item.destination].filter(Boolean).join(" - "),
-          PNG_PADDING + 104,
-          y + 88,
-          560,
-          20,
-        );
-      }
-
-      context.fillStyle = isIncome ? "#15805f" : "#c84d58";
-      context.font = "800 24px Arial, Helvetica, sans-serif";
-      context.textAlign = "right";
-      context.fillText(item.amount, PNG_WIDTH - PNG_PADDING - 22, y + 58);
-      context.textAlign = "left";
-
-      y += rowHeight;
-    });
+  if (transaction.description || transaction.destination) {
+    context.font = "400 16px Arial, Helvetica, sans-serif";
+    drawWrappedText(
+      context,
+      [transaction.description, transaction.destination].filter(Boolean).join(" - "),
+      PNG_PADDING + 104,
+      y + 88,
+      560,
+      20,
+    );
   }
+
+  context.fillStyle = isIncome ? "#15805f" : "#c84d58";
+  context.font = "800 24px Arial, Helvetica, sans-serif";
+  context.textAlign = "right";
+  context.fillText(transaction.amount, PNG_WIDTH - PNG_PADDING - 22, y + 58);
+  context.textAlign = "left";
 
   context.fillStyle = "#647084";
   context.font = "400 16px Arial, Helvetica, sans-serif";
   context.fillText("NovaBank Digital", PNG_PADDING, height - 56);
 
   const link = document.createElement("a");
-  link.download = `mutasi-transaksi-${formatFilenameDate()}.png`;
+  link.download = `bukti-transaksi-${transaction.id}-${formatFilenameDate()}.png`;
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
@@ -185,7 +176,6 @@ export default function ActivityPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
 
-  // Fetch transaksi dari database setiap 3 detik untuk real-time
   useEffect(() => {
     async function fetchTransactions() {
       try {
@@ -221,7 +211,6 @@ export default function ActivityPage() {
           created_at?: string;
         }>;
 
-        // Transform database transactions to UI format
         const formattedTransactions: Transaction[] = dbTransactions.map((trx) => {
           const date = trx.created_at
             ? new Date(trx.created_at).toLocaleDateString("id-ID", {
@@ -264,7 +253,6 @@ export default function ActivityPage() {
 
     fetchTransactions();
 
-    // Polling setiap 3 detik untuk update real-time
     const interval = setInterval(fetchTransactions, 3000);
 
     return () => clearInterval(interval);
@@ -273,14 +261,12 @@ export default function ActivityPage() {
   const filteredTransactions = useMemo(() => {
     let result = transactions;
 
-    // Filter berdasarkan tipe
     if (filterType !== "all") {
       result = result.filter((item) =>
         filterType === "income" ? item.amount.startsWith("+") : item.amount.startsWith("-"),
       );
     }
 
-    // Filter berdasarkan search
     if (searchQuery) {
       result = result.filter(
         (item) =>
@@ -293,15 +279,16 @@ export default function ActivityPage() {
     return result;
   }, [searchQuery, filterType, transactions]);
 
-  const handleDownloadPng = useCallback(() => {
+  // Mengubah handler agar menerima parameter item transaksi spesifik
+  const handleDownloadPng = useCallback((transaction: Transaction) => {
     try {
       setDownloadError("");
-      downloadTransactionsAsPng(filteredTransactions);
+      downloadSingleTransactionAsPng(transaction);
     } catch (error) {
-      console.error("Error downloading transactions PNG:", error);
+      console.error("Error downloading transaction PNG:", error);
       setDownloadError("Gagal membuat gambar PNG. Silakan coba lagi.");
     }
-  }, [filteredTransactions]);
+  }, []);
 
   return (
     <BankingLayout>
@@ -325,14 +312,7 @@ export default function ActivityPage() {
               <option value="income">Pemasukan</option>
               <option value="expense">Pengeluaran</option>
             </select>
-            <button
-              className="primary-action download-action"
-              disabled={filteredTransactions.length === 0}
-              onClick={handleDownloadPng}
-              type="button"
-            >
-              Download PNG
-            </button>
+            {/* Tombol global download dihilangkan dari sini karena fungsinya diubah per item */}
           </div>
           {downloadError && <p className="form-message error">{downloadError}</p>}
           <div className="transaction-list">
@@ -342,9 +322,9 @@ export default function ActivityPage() {
               </div>
             ) : filteredTransactions.length > 0 ? (
               filteredTransactions.map((item) => (
-                <div className="transaction-item" key={item.id}>
+                <div className="transaction-item" key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "between" }}>
                   <span>{item.initial}</span>
-                  <div>
+                  <div style={{ flex: 1, marginLeft: "12px" }}>
                     <strong>{item.title}</strong>
                     <p>{item.date}</p>
                     {item.description && (
@@ -358,9 +338,20 @@ export default function ActivityPage() {
                       </p>
                     )}
                   </div>
-                  <b className={item.amount.startsWith("+") ? "income" : "expense"}>
-                    {item.amount}
-                  </b>
+                  <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
+                    <b className={item.amount.startsWith("+") ? "income" : "expense"}>
+                      {item.amount}
+                    </b>
+                    {/* Menambahkan tombol download untuk masing-masing transaksi */}
+                    <button
+                      className="primary-action download-action"
+                      style={{ padding: "4px 8px", fontSize: "12px" }}
+                      onClick={() => handleDownloadPng(item)}
+                      type="button"
+                    >
+                      Download PNG
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
